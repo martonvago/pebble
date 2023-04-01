@@ -1,0 +1,63 @@
+( main.tal )
+
+( device )
+|00 @System [ &vector $2 &pad $6 &r $2 &g $2 &b $2 ]
+|20 @Screen [ &vector $2 &width $2 &height $2 &pad $2 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1 ]
+|80 @Controller [ &vector $2 &button $1 &key $1 ]
+
+( macros )
+%RTN { JMP2r }
+%HALF2 { #01 SFT2 } ( short -- short/2 )
+%DOUBLE2 { #10 SFT2 } ( short -- short*2 )
+
+( constants )
+
+( zero page )
+|0000
+	@votes [ &yes $2 &no $2 &invalid $2 ]
+	@current-view $1
+
+( main program )
+|0100
+	( set system colors )
+	#2ce9 .System/r DEO2
+	#01c0 .System/g DEO2
+	#2ce5 .System/b DEO2
+
+	#0000 .Screen/x DEO2
+	#0008 .Screen/y DEO2
+	;bear .Screen/addr DEO2
+
+	;on-controller .Controller/vector DEO2
+	;on-frame .Screen/vector DEO2
+
+BRK
+
+( run this when key is pressed or released )
+@on-controller ( -> )
+	.Controller/key DEI
+	LIT "1 EQU
+	,&vote-yes JCN
+	,&end JMP
+
+	&vote-yes
+		.votes/yes LDZ2 INC2 .votes/yes STZ2 
+
+	&end
+BRK
+
+@on-frame 
+	;loop-i LDA2 .votes/yes LDZ2 LTH2
+	,&draw-bear JCN
+	,&end-on-frame JMP
+
+	&draw-bear
+		.Screen/x DEI2 #0008 ADD2 .Screen/x DEO2
+	   	#c1 .Screen/sprite DEO
+	   	;loop-i LDA2 INC2 ;loop-i STA2
+
+	&end-on-frame
+BRK
+
+@bear 3c7e ffbd 7e42 663c 247e ffdb 7e7e 7e3c
+@loop-i 0000
