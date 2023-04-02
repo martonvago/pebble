@@ -1,43 +1,34 @@
 |10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
 
-%DUP8 { STH2 ROT2k ROT2 STH2 SWP2r STH2kr ROT2 STH2 SWP2 ROT2r STH2r STH2r STH2r }
-
+%PLUS_TWO { INC INC } ( num -- num + 2 )
+%INC32 { #0000 #0001 add32 } ( long** -- long** + 1 )
+%DUP4 { OVR2 OVR2 } ( a** -- a** a** )
+%DUP8 { STH2 ROT2k ROT2 STH2 SWP2r STH2kr ROT2 STH2 SWP2 ROT2r STH2r STH2r STH2r } ( a** b** -- a** b** a** b** )
+%LDZ4 { LDZ2k ROT PLUS_TWO LDZ2 } ( zero-page-address -- long** )
+%STZ4 { STH SWP2 STHkr STZ2 STHr PLUS_TWO STZ2 } ( long** zero-page-address -- )
+%INC_ZP { STHk LDZ4 INC32 STHr STZ4 } ( zero-page-address -- )
 
 ( zero page )
 |0000
-    @votes [ &yes-high $2 &yes-low $2 &no-high $2 &no-low $2 &invalid-high $2 &invalid-low $2 ]
+    @votes [ &yes $4 &no $4 &invalid $4 ]
     @current-view $1
 
 
 |0100
     reset-votes
-    incr-yes
-    incr-yes
-    load-yes
+    .votes/yes INC_ZP
+    .votes/yes INC_ZP
+    .votes/yes LDZ4
     print-decimal
 
 BRK
 
 @reset-votes ( -- )
-    #0000 DUP2 .votes/yes-high STZ2
-    DUP2 .votes/yes-low STZ2
-    DUP2 .votes/no-high STZ2
-    DUP2 .votes/no-low STZ2
-    DUP2 .votes/invalid-high STZ2
-    .votes/invalid-low STZ2
+    #0000 #0000 DUP4 .votes/yes STZ4
+    DUP4 .votes/no STZ4
+    .votes/invalid STZ4
 JMP2r
 
-@load-yes ( -- long** )
-    .votes/yes-high LDZ2
-    .votes/yes-low LDZ2
-JMP2r
-
-@incr-yes ( -- )
-    load-yes #0000 #0001 add32
-
-    .votes/yes-low STZ2
-    .votes/yes-high STZ2
-JMP2r
 
 @print-decimal ( long** -- )
 
