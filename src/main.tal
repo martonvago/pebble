@@ -1,63 +1,169 @@
-( main.tal )
-
-( device )
-|00 @System [ &vector $2 &pad $6 &r $2 &g $2 &b $2 ]
-|20 @Screen [ &vector $2 &width $2 &height $2 &pad $2 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1 ]
-|80 @Controller [ &vector $2 &button $1 &key $1 ]
+( devices )
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
 
 ( macros )
-%RTN { JMP2r }
-%HALF2 { #01 SFT2 } ( short -- short/2 )
-%DOUBLE2 { #10 SFT2 } ( short -- short*2 )
-
-( constants )
+%EMIT { #18 DEO }
+%NL { #0a EMIT }
+%OPTION_INVALID {   
+    STHk LIT "0 LTH 
+    STHr LIT "2 GTH
+    ORA 
+} ( num -- f )
+%PLUS_TWO { INC INC } ( num -- num + 2 )
+%INC32 { #0000 #0001 add32 } ( long^^ -- long^^ + 1 )
+%DUP8 { STH2 ROT2k ROT2 STH2 SWP2r STH2kr ROT2 STH2 SWP2 ROT2r STH2r STH2r STH2r } ( a^^ b^^ -- a^^ b^^ a^^ b^^ )
+%LDZ4 { LDZ2k ROT PLUS_TWO LDZ2 } ( zero-page-address -- long^^ )
+%STZ4 { STH SWP2 STHkr STZ2 STHr PLUS_TWO STZ2 } ( long^^ zero-page-address -- )
+%INC_ZP { STHk LDZ4 INC32 STHr STZ4 } ( zero-page-address -- )
 
 ( zero page )
 |0000
-	@votes [ &yes $2 &no $2 &invalid $2 ]
-	@current-view $1
+    @votes [ &yes $4 &no $4 &invalid $4 ]
 
-( main program )
+( main )
 |0100
-	( set system colors )
-	#2ce9 .System/r DEO2
-	#01c0 .System/g DEO2
-	#2ce5 .System/b DEO2
+  ;on-input .Console/vector DEO2 
+BRK
 
-	#0000 .Screen/x DEO2
-	#0008 .Screen/y DEO2
-	;bear .Screen/addr DEO2
+( variables )
+@command $64 &end $1
+@ptr :command
 
-	;on-controller .Controller/vector DEO2
-	;on-frame .Screen/vector DEO2
+( constants )
+@command-vote "vote 20 "--option 20 $1
+@command-tabulate "tabulate $1
+
+( subroutines )
+@on-input                               ( called for each char after submitted via enter )
+    .Console/read DEI                   ( read char )
+    #0a EQU ;on-enter JCN2              ( was it enter? )
+    
+    ;ptr LDA2 ;command/end              ( is the command buffer full? )    
+    EQU2 ,&ignore JCN                   ( if so, ignore remaining chars )
+    
+
+    .Console/read DEI ;ptr LDA2 STA     ( save char )
+    ;ptr LDA2k INC2 SWP2 STA2           ( ptr to next address )        
+    BRK
+
+    &ignore
+BRK
+
+@on-enter
+    #00 ;ptr LDA2 STA                 	( null terminate str )
+    ;command ;ptr STA2                	( reset ptr )  
+    
+    ;is-vote JSR2 ;do-vote JCN2       	( if command vote-command, go to that subroutine )
+    ;is-tabulate JSR2 ;do-tabulate JCN2     
+
+    ;pinl JSR2 "command 20 "not 20 "recognised 0a $1
 
 BRK
 
-( run this when key is pressed or released )
-@on-controller ( -> )
-	.Controller/key DEI
-	LIT "1 EQU
-	,&vote-yes JCN
-	,&end JMP
+@is-vote ( -- f )
+    ;command ;command-vote              
+    ;command-vote ;slen JSR2 NIP     	( command length <= ff )
+    ;seq-til JSR2                    	( does the input match the command body? )  
+JMP2r
 
-	&vote-yes
-		.votes/yes LDZ2 INC2 .votes/yes STZ2 
+@is-tabulate ( -- f )
+    ;command ;command-tabulate              
+    ;command-tabulate ;slen JSR2 NIP     ( command length <= ff )
+    ;seq-til JSR2                    	 ( does the input match the command body? )  
+JMP2r
 
-	&end
+@do-vote
+    ;command ;command-vote ;slen JSR2 ADD2 ( command address + command body length = arg address )
+    LDA DUP                                ( load arg byte )
+    OPTION_INVALID #00 EQU ,&cont JCN      ( end if option invalid )
+    ;pinl JSR2 "invalid 20 "vote 20 "option 0a $1
+    POP
+    BRK
+
+    &cont
+    #30 SUB                                ( char > num [0, 2] )
+    #04 MUL .votes ADD                     ( opt*4 + votes addr = option zp addr )
+    INC_ZP                                 ( cast vote )    
+    ;pinl JSR2 "vote 20 "cast 0a 0a $1
 BRK
 
-@on-frame 
-	;loop-i LDA2 .votes/yes LDZ2 LTH2
-	,&draw-bear JCN
-	,&end-on-frame JMP
+@do-tabulate
+    NL
+    ;pinl JSR2 "Results: 0a 0a $1 
+    ;pinl JSR2 "Votes 20 "for 20 "option 20 "0: 20 $1 
+    .votes/yes LDZ4 
+    ;print-decimal JSR2 NL
 
-	&draw-bear
-		.Screen/x DEI2 #0008 ADD2 .Screen/x DEO2
-	   	#c1 .Screen/sprite DEO
-	   	;loop-i LDA2 INC2 ;loop-i STA2
+    ;pinl JSR2 "Votes 20 "for 20 "option 20 "1: 20 $1 
+    .votes/no LDZ4 
+    ;print-decimal JSR2 NL
 
-	&end-on-frame
+    ;pinl JSR2 "Votes 20 "for 20 "option 20 "2: 20 $1 
+    .votes/invalid LDZ4 
+    ;print-decimal JSR2 NL
+
+    NL
 BRK
 
-@bear 3c7e ffbd 7e42 663c 247e ffdb 7e7e 7e3c
-@loop-i 0000
+
+@scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
+
+@slen ( str* -- len^ ) DUP2 ;scap JSR2 SWP2 SUB2 JMP2r
+
+@pinl
+    LDArk STHr DUP #18 DEO
+    INC2r ,pinl JCN
+JMP2r
+
+@seq-til ( a* b* limit[<=ff] -- f ) 
+    DUP #00 NEQ ,&setup JCN                 ( end with 01 if limit 0 )
+    POP POP2 POP2
+    #01
+    JMP2r
+
+    &setup
+    ,&limit STR                             ( limit to loc var )
+    STH2 
+    #00 ,&counter STR                       ( counter = 0 )
+    &l                                      ( compare strings by char )                
+        LDAk LDAkr STHr                     
+        ANDk #00 
+        EQU ,&e JCN                         ( end if string ended )
+        NEQk ,&e JCN                        ( end if chars diff )        
+
+        [ LIT &counter $1 ] INC DUP ,&counter STR ( counter++ ) 
+        [ LIT &limit $1 ]                   ( load 1 byte at addr limit )
+        EQU ,&e JCN                         ( end if limit == counter ) 
+        
+        POP2 INC2 INC2r                     ( otherwise take next char )
+        ,&l JMP 
+        
+        &e 
+            NIP2 POP2r 
+            EQU                             ( result of last comp is final result )
+JMP2r
+
+@print-decimal ( long^^ -- )
+    #00 ,&z STR
+    #3b9a #ca00 ,&parse JSR     ( 1 000 000 000 )
+    #05f5 #e100 ,&parse JSR     ( 100 000 000 )
+    #0098 #9680 ,&parse JSR     ( 10 000 000 )
+    #000f #4240 ,&parse JSR     ( 1 000 000 )
+    #0001 #86a0 ,&parse JSR     ( 100 000 )
+    #0000 #2710 ,&parse JSR     ( 10 000 )
+    #0000 #03e8 ,&parse JSR     ( 1000 )
+    #0000 #0064 ,&parse JSR     ( 100 )
+    #0000 #000a ,&parse JSR     ( 10 )
+    NIP2 NIP
+    &emit
+        DUP [ LIT &z $1 ] EQU ,&skip JCN
+            #ff ,&z STR DUP #30 ADD .Console/write DEO
+            &skip
+    POP
+    JMP2r
+    
+    &parse
+        DUP8 div32 DUP ,&emit JSR mul32 sub32
+    JMP2r
+
+~math32.tal
