@@ -81,7 +81,7 @@ JMP2r
     BRK
 
     &cont
-    #30 SUB                                ( char > num [0, 2] )
+    #30 SUB                                ( char -> num [0, 2] )
     #04 MUL .votes ADD                     ( opt*4 + votes addr = option zp addr )
     INC_ZP                                 ( cast vote )    
     ;pinl JSR2 "vote 20 "cast 0a 0a $1

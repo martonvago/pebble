@@ -1,0 +1,64 @@
+( referenced device ports defined in caller files!! )
+
+@pop4 ( a^^ --  )
+    POP2 POP2 JMP2r
+
+@dup4 ( a^^ -- a^^ a^^ )
+    OVR2 OVR2 JMP2r
+
+@dup8 ( a^^ b^^ -- a^^ b^^ a^^ b^^ )
+    STH2 ROT2k ROT2 STH2 SWP2r STH2kr ROT2 STH2 SWP2 ROT2r STH2r STH2r STH2r JMP2r
+
+@option-invalid ( num -- f )
+    STHk LIT "0 LTH 
+    STHr LIT "2 GTH
+    ORA 
+    JMP2r
+
+@plus-two ( num -- num + 2 )
+    INC INC JMP2r
+
+@inc32 ( long^^ -- long^^ + 1 )
+    #0000 #0001 add32 JMP2r
+
+@ldz4 ( zero-page-address -- long^^ )
+    LDZ2k ROT ;plus-two JSR2 LDZ2 JMP2r 
+
+@stz4 ( long^^ zero-page-address -- )
+    STH SWP2 STHkr STZ2 STHr ;plus-two JSR2 STZ2 JMP2r
+
+@inc-zp ( zero-page-address -- )
+    STHk ldz4 inc32 STHr stz4 JMP2r
+
+@print-decimal ( long^^ -- )
+    dup4
+    non-zero32 ,&cont JCN
+    pop4
+    #30 .Console/write DEO
+    JMP2r
+
+    &cont
+    #00 ,&z STR
+    #3b9a #ca00 ,&parse JSR     ( 1 000 000 000 )
+    #05f5 #e100 ,&parse JSR     ( 100 000 000 )
+    #0098 #9680 ,&parse JSR     ( 10 000 000 )
+    #000f #4240 ,&parse JSR     ( 1 000 000 )
+    #0001 #86a0 ,&parse JSR     ( 100 000 )
+    #0000 #2710 ,&parse JSR     ( 10 000 )
+    #0000 #03e8 ,&parse JSR     ( 1000 )
+    #0000 #0064 ,&parse JSR     ( 100 )
+    #0000 #000a ,&parse JSR     ( 10 )
+    NIP2 NIP
+    &emit
+        DUP ,&z LDR EQU ,&skip JCN
+            #ff ,&z STR DUP #30 ADD .Console/write DEO
+            &skip
+    POP
+    JMP2r
+    
+    &parse
+        ;dup8 JSR2 div32 DUP ,&emit JSR mul32 sub32
+    JMP2r
+[ &z $1 ]    
+
+~/home/marton/uxn/pebble/src/math32.tal
