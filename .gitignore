@@ -1,3 +1,4 @@
 /project-log.txt
 *.rom
 *.rom.sym
+__pycache__

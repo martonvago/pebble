@@ -1,33 +1,11 @@
-( print-decimal test )
-
-%EMIT { #18 DEO }
-%SPACE { #20 EMIT }
-%NEWLINE { #0a EMIT }
-%RESET-POS { #0000 ;pos STA2 #00 ;buf STA }
 
 |10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
 
-|0000
-@buf $24 ( buffer used by test-interact )
-@pos $1 ( position in buffer used by test-interact )
-
-
 ( main )
-|0100 ;test-interact .Console/vector DEO2 BRK
-
-~/home/marton/uxn/pebble/src/functions.tal
-
-@test-interact
-    .Console/read DEI ( char^ )
-    DUP #0a EQU ( char^ char=\n? )
-    ,&exec JCN ( char^ )
-    .pos LDZ .buf ADD STZ
-    .pos LDZk INC SWP STZ BRK
-    &exec
-    POP (  )
-    
-    .buf ldz4 ;print-decimal JSR2
-
-    NEWLINE RESET-POS 
+|0100 
+    [ [ #ffff #ffff ] ]          ( given )
+    print-decimal                ( when )
+    #800f DEO                    ( halt )   
 BRK
 
+~/home/marton/uxn/pebble/src/functions.tal
