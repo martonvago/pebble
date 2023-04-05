@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import ultraimport
+import sys, os, ultraimport
 ultraimport('__dir__/../tester.py', '*', locals())
 
 def dec_to_ubytelit(num):
@@ -10,7 +10,8 @@ def dec_to_ubytelit(num):
 # When seq-til is called with the absolute addresses of these strings and a limit (0 - ff)
 # Then it returns a flag (0/1) whether the 2 strings are equal up to the limit
 def main():
-    t = Tester('seq-til.test.tal')
+    t = Tester('seq-til.test.tal', __file__)
+
     for case in [
         ['when strings equal', 13, 'test string 1', 'test string 1', True],
         ['when strings equal and limit < len', 5, 'test string 1', 'test string 1', True],
@@ -24,6 +25,9 @@ def main():
         ['when limit max', 255, 'a', 'a', True],
     ]:
         t.test(case[0], [dec_to_ubytelit(case[1]), us(case[2]), us(case[3])], ubyte(case[4]))  
+
+    sys.exit(t.fail)    
+
 
 if __name__ == "__main__":
     main()
