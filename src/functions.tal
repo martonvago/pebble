@@ -30,6 +30,15 @@
 @inc-zp ( zero-page-address -- )
     STHk ldz4 inc32 STHr stz4 JMP2r
 
+@scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
+
+@slen ( str* -- len^ ) DUP2 ;scap JSR2 SWP2 SUB2 JMP2r
+
+@pinl
+    LDArk STHr DUP #18 DEO
+    INC2r ,pinl JCN
+JMP2r
+
 @seq-til ( a* b* limit[<=ff] -- f ) 
     DUP #00 NEQ ,&setup JCN                 ( end with 01 if limit 0 )
     POP POP2 POP2
@@ -46,8 +55,8 @@
         EQU ,&e JCN                         ( end if string ended )
         NEQk ,&e JCN                        ( end if chars diff )        
 
-        [ LIT &counter $1 ] INC DUP ,&counter STR ( counter++ ) 
-        [ LIT &limit $1 ]                   ( load 1 byte at addr limit )
+        ,&counter LDR INC DUP ,&counter STR ( counter++ ) 
+        ,&limit LDR                         ( load 1 byte at addr limit )
         EQU ,&e JCN                         ( end if limit == counter ) 
         
         POP2 INC2 INC2r                     ( otherwise take next char )
@@ -57,6 +66,7 @@
             NIP2 POP2r 
             EQU                             ( result of last comp is final result )
 JMP2r
+[  &counter $1 &limit $1 ]
     
 @print-decimal ( long^^ -- )
     dup4
