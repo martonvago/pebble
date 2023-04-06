@@ -20,7 +20,7 @@ BRK
 @ptr :command
 
 ( constants )
-@command-vote "vote 20 "--option 20 $1
+@command-vote "vote 20 $1
 @command-tabulate "tabulate $1
 
 ( subroutines )
