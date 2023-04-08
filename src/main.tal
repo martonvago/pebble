@@ -135,37 +135,9 @@ BRK
     ;command-addres arg-addr DUP2
     prep-arg
     ROT ROT
-    valid-arg-nums
+    .opt LDZ valid-arg-nums
     AND
     JMP2r
-
-@valid-arg-nums ( arg-addr* -- f )  ( nums list ends 00 00 )
-    #01 ,&c STR                 ( c = 1 )
-    STH2                        ( keep arg-addr on RS floor )
-    &next-num
-        LDAkr STHr              ( LOAD char )
-        #00 EQU ,&pass JCN      ( if char = 00, pass )
-
-        .opt LDZ [ LIT &c $1 ]  ( c: count of nums )
-        LTH ,&fail JCN          ( if opt < c, fail )
-
-        STH2r DUP2 scap         ( find num end ) 
-        DUP2 INC2 STH2          ( arg-addr = num end++ )
-        sdec-lthe-max           
-        #00 EQU ,&fail JCN      ( if num > ffff ffff, fail )
-
-        ,&c LDR INC ,&c STR     ( c++ )
-        ,&next-num JMP
-
-    &fail
-        POP2r
-        #00    
-        JMP2r
-
-    &pass
-        POP2r
-        #01
-        JMP2r
 
 
 ~/home/marton/uxn/pebble/src/functions.tal
