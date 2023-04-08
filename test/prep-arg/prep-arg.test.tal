@@ -1,0 +1,12 @@
+
+( main )
+|0100
+	;arg prep-arg
+	print-byte
+    #800f DEO 
+BRK
+
+@arg [ [  $1 ] ]
+
+~/home/marton/uxn/pebble/src/functions.tal
+~/home/marton/uxn/pebble/test/test-utils.tal

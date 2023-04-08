@@ -9,25 +9,47 @@ from colorama import Style
 
 colorama_init()
 
+MAX_NUM = (1 << 32) - 1
+
+def hex8(num):
+    return '{0:08x}'.format(num)
+
 def ubyte_lit(string):
     return re.sub(r'..', lambda matchobj: f"#{matchobj.group(0)} ", string)[:-1]
 
 def ushort_lit(string):
     return re.sub(r'....', lambda matchobj: f"#{matchobj.group(0)} ", string)[:-1]
 
-def us(string):
-    string = re.sub(r'\S+', lambda matchobj: f"\"{matchobj.group(0)}", string)
-    return re.sub(' ', ' 20 ', string) + ' $1'
-
 def ubyte(num):
     return format(num, '02x')
+
+def _split_str_to_max_chunks(string):
+    max = 60
+    result = []
+    while len(string) > 0:
+        result.append(string[:max])   
+        string = string[max:]
+    return result
+            
+
+def _uword(matchobj):
+    string = matchobj.group(0)
+    if string.isspace():
+        return ' 20 '
+    chunks = _split_str_to_max_chunks(string)
+    return '"' + ' "'.join(chunks)
+
+
+def us(string):
+    return re.sub(r'(\S+)|(\s)', _uword, str(string)) + ' $1'
 
 def blank_replace(_, inputs):
     return f"[ [ {inputs.pop(0)} ] ]"
 
-def abs_path_to_file(filename, location):
-    here = os.path.dirname(os.path.abspath(location))
-    return os.path.join(here, filename)
+def abs_path_to_file(file):
+    here = os.path.dirname(os.path.abspath(file))
+    tal_file = os.path.basename(file)[:-2] + 'tal'
+    return os.path.join(here, tal_file)
 
 class Tester:
     uxn_loc = '/home/marton/uxn/uxn/'
@@ -35,9 +57,9 @@ class Tester:
     uxncli = uxn_loc + 'uxncli'
     placeholder = r'\[ \[.*\] \]' 
 
-    def __init__(self, filename, f):
-        self.filename = abs_path_to_file(filename, f)
-        self.rom = filename + '.rom'
+    def __init__(self, file):
+        self.filename = abs_path_to_file(file)
+        self.rom = self.filename + '.rom'
         self.fail = False
 
     def test(self, name, inputs, expected):
@@ -60,4 +82,3 @@ class Tester:
             self.fail = True
             case = {'got': got, 'expected': expected}
             print(f"{Fore.RED}{name}: failed{Style.RESET_ALL} ({case})")
-

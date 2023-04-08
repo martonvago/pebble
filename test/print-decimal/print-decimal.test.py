@@ -8,7 +8,7 @@ ultraimport('__dir__/../tester.py', '*', locals())
 # When print-decimal is called
 # Then it prints the number in decimal
 def main():
-    t = Tester('print-decimal.test.tal', __file__)
+    t = Tester(__file__)
 
     for hex_string in ['00000000', '00000001', '00000002', '0000abdf', 'ffffffff']:
         t.test(hex_string, [ushort_lit(hex_string)], str(int(hex_string, 16)))

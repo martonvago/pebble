@@ -1,11 +1,9 @@
 
-|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
-
 ( main )
 |0100 
     ;string1 ;string2 [ [ #ff ] ] ( given )
     seq-til                       ( when )
-    print                         ( then )
+    print-byte                    ( then )
     #800f DEO                     ( halt )   
 BRK
 
@@ -13,8 +11,4 @@ BRK
 @string2 [ [ "a $1 ] ]
 
 ~/home/marton/uxn/pebble/src/functions.tal
-
-@print ( byte -- )
-    DUP #04 SFT ,&char JSR
-    &char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
-JMP2r
+~/home/marton/uxn/pebble/test/test-utils.tal

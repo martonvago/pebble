@@ -1,4 +1,4 @@
-( referenced device ports defined in caller files!! )
+( referenced device ports, if any, defined in caller files!! )
 
 @pop4 ( a^^ --  )
     POP2 POP2 JMP2r
@@ -78,7 +78,7 @@ JMP2r
     dup4
     non-zero32 ,&cont JCN
     pop4
-    #30 .Console/write DEO
+    #30 #18 DEO
     JMP2r
 
     &cont
@@ -95,7 +95,7 @@ JMP2r
     NIP2 NIP
     &emit
         DUP ,&z LDR EQU ,&skip JCN
-            #ff ,&z STR DUP #30 ADD .Console/write DEO
+            #ff ,&z STR DUP #30 ADD #18 DEO
             &skip
     POP
     JMP2r
@@ -174,7 +174,11 @@ JMP2r
 
 @prep-arg ( arg-addr* -- f )
     #00 ,&sep-ok STR            ( sep-ok = false )
+
     STH2                        ( keep arg-addr on RS floor )
+    LDAkr STHr #00              ( load 1st char )
+    EQU ,&fail JCN              ( if string empty, fail )
+
     &next-char
         LDAkr STHkr #00         ( load char )
         EQU ,&pass JCN          ( if char = 00, pass )  

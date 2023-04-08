@@ -1,0 +1,13 @@
+
+( main )
+|0100
+	;arg prep-arg
+	;arg print-array
+    #800f DEO 
+BRK
+
+@arg [ [ "4294967295;4294967295;4294967295;4294967295;4294967295;42949 "67295;4294967295;4294967295;4294967295; $1 ] ] $1
+
+
+~/home/marton/uxn/pebble/src/functions.tal
+~/home/marton/uxn/pebble/test/test-utils.tal
