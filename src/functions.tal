@@ -15,6 +15,12 @@
     ORA 
     JMP2r
 
+@is-digit ( char -- f )
+    STHk LITr "0 LTHr LITr 00 EQUr
+    LIT "9 GTH #00 EQU
+    STHr AND    
+    JMP2r
+
 @plus-two ( num -- num + 2 )
     INC INC JMP2r
 
@@ -98,5 +104,109 @@ JMP2r
         ;dup8 JSR2 div32 DUP ,&emit JSR mul32 sub32
     JMP2r
 [ &z $1 ]    
+
+@sdec-lthe-max ( start* end* -- f )      ( end: addr of terminator )   
+    OVR2 SUB2                            ( str len )  
+    #000a                 
+    LTH2k ,&lth-10 JCN                   ( if len < 10, pass )  
+
+    GTH2 ,&gth-10 JCN                    ( if len > 10, fail )
+
+    #0000 SWP2 10-dig-dec-val            ( num <= ffff ffff? )  
+    ,&pass JCN
+    ,&fail JMP
+
+    &gth-10
+        POP2
+    &fail
+        #00    
+        JMP2r
+    
+    &lth-10
+        POP2 POP2 POP2
+    &pass
+        #01
+        JMP2r
+
+@10-dig-dec-val ( i^ inp* -- f )          ( i: 0000 -> 0009 over chars )
+    STH2k                                 ( stash inp )
+    OVR2                                  ( copy i )  
+    ADD2 LDA #30 SUB STHk                 ( load inp + i and parse digit )   
+    ROT ROT STH2k                         ( i to top )  
+    ;max ADD2 LDA #30 SUB STHk            ( load max + i and parse digit )   
+    GTH ,&too-big JCN                     ( if inp digit > max digit, fail )  
+    
+    ROTr ROTr STH2kr #0009                ( i to WS )   
+    EQU2 ,&last JCN                       ( if i = 9, pass )  
+    
+    SWP2r STH2r                           ( inp and max digits to WS )  
+    EQU ,&recurse JCN                     ( if equal, recurse )
+    POP2r POP2r                           ( else, pass )
+    #01
+    JMP2r
+
+    &too-big
+        POP2r POP2r POP2r
+        #00
+        JMP2r
+    &last
+        POP2r POP2r POP2r
+        #01
+        JMP2r
+    &recurse
+        STH2r INC2 STH2r 10-dig-dec-val   ( recurse with i++ inp )
+        JMP2r
+
+[ @max "4294967295 $1 ]                   ( ffff ffff as decimal string ) 
+
+
+@sdec-to-hex ( str*[max ffff ffff] -- val^^ )
+    STH2
+    #0000 #0000
+    &w
+        #0000 #000a mul32
+        #0000 #00
+        LDAkr LITr 30 SUBr STHr add32
+        INC2r LDAkr STHr ,&w JCN
+    POP2r
+
+JMP2r
+
+@prep-arg ( arg-addr* -- f )
+    #00 ,&sep-ok STR            ( sep-ok = false )
+    STH2                        ( keep arg-addr on RS floor )
+    &next-char
+        LDAkr STHkr #00         ( load char )
+        EQU ,&pass JCN          ( if char = 00, pass )  
+
+        STHkr LIT ";
+        EQU ,&sep-check JCN     ( if char = ;, terminate num )
+
+        STHr is-digit                       
+        #00 EQU ,&fail JCN      ( if char not a digit, fail )  
+
+        #01 ,&sep-ok STR        ( sep-ok = true )
+        INC2r                   ( arg-addr++ )
+        ,&next-char JMP
+
+        &sep-check
+            POPr
+            [ LIT &sep-ok $1 ]  ( sep-ok: is ; legal as current char? )
+            #00 EQU ,&fail JCN  ( if illegal ;, fail )
+
+            #00 STH2kr STA      ( terminate num with 00 )
+            #00 ,&sep-ok STR    ( sep-ok = false )
+            INC2r               ( arg-addr++ )
+            ,&next-char JMP
+
+        &fail
+            POP2r
+            #00    
+            JMP2r
+
+        &pass
+            POPr POP2r
+            #01
+            JMP2r
 
 ~/home/marton/uxn/pebble/src/math32.tal

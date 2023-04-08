@@ -8,19 +8,22 @@
 
 ( zero page )
 |0000
+    @opt $1
     @votes [ &yes $4 &no $4 &invalid $4 ]
 
 ( main )
 |0100
-  ;on-input .Console/vector DEO2 
+    #03 .opt STZ
+    ;on-input .Console/vector DEO2 
 BRK
 
 ( variables )
-@command $64 &end $1
+@command $64 &end $2
 @ptr :command
 
 ( constants )
 @command-vote "vote 20 $1
+@command-addres "add-results 20 $1
 @command-tabulate "tabulate $1
 
 ( subroutines )
@@ -45,6 +48,9 @@ BRK
     
     ;command-vote is-command ;do-vote JCN2       	( if command vote-command, go to that subroutine )
     ;command-tabulate is-command ;do-tabulate JCN2   
+    ;command-addres is-command ;do-add-results JCN2   
+
+    ( TODO: clear command buff )
 
     ;pinl JSR2 "command 20 "not 20 "recognised 0a $1
 
@@ -57,7 +63,7 @@ BRK
 JMP2r
 
 @do-vote
-    ;command ;command-vote ;slen JSR2 ADD2 ( command address + command body length = arg address )
+    ;command-vote arg-addr                 ( get arg address )
     LDA DUP                                ( load arg byte )
     option-invalid #00 EQU ,&cont JCN      ( end if option invalid )
     ;pinl JSR2 "invalid 20 "vote 20 "option 0a $1
@@ -71,19 +77,25 @@ JMP2r
     ;pinl JSR2 "vote 20 "cast 0a 0a $1
 BRK
 
+@arg-addr ( *reference command -- arg* )
+    slen ;command ADD2                     ( ref command length + command addr = arg addr )
+JMP2r
+
 @do-tabulate 
-    #03 ,&c STR         ( num of options )
+    #00 ,&c STR         ( num of options )
     &l
-        #03 #04 MUL ,&c LDR #04 MUL SUB  ( zp addr = votes len - c*8 + votes zp addr )
-        #03 ,&c LDR SUB                  ( opt num = num opt - c )
+        ,&c LDR #04 MUL .votes ADD       ( zp addr = votes len - c*4 + votes zp addr )
+        ,&c LDR                   
         tabulate-option
 
-        ,&c LDR #01 SUB DUP ,&c STR      ( c-- )
-        #00 NEQ 
-        ,&l JCN
+        ,&c LDR INC DUP ,&c STR      ( c++ )
+        .opt LDZ 
+        LTH ,&l JCN
     &end
+    NL
 BRK
 [ &c $1 ]
+
 
 @tabulate-option ( zp-addr opt-num )
     ;pinl JSR2 "Votes 20 "for 20 "option 20 $1 
@@ -91,6 +103,69 @@ BRK
     ldz4 print-decimal
     NL
 JMP2r
+
+( how long can arg max be? ...; 11 chars * 9 options = 99 chars -> 99 bytes )
+@do-add-results 
+    valid-addres-arg ,&cont JCN              ( if args invalid, break )
+    ;pinl JSR2 "invalid 20 "vote 20 "results 20 "provided 0a $1
+    BRK
+
+    &cont
+    ;command-addres arg-addr ,&s STR2
+    #00 ,&c STR
+    &next-num
+        [ LIT &c $1 ] .opt LDZ LTH
+        #00 EQU ,&end JCN
+
+        [ LIT2 &s $2 ] sdec-to-hex
+        ,&c LDR #04 MUL .votes ADD
+        STHk ldz4
+        add32
+        STHr stz4
+
+        ,&c LDR INC ,&c STR ( c++ )
+        ,&s LDR2 scap INC2  ( s = start of next num )
+        ,&s STR2
+        ,&next-num JMP
+
+    &end
+BRK
+
+@valid-addres-arg ( -- f )
+    ;command-addres arg-addr DUP2
+    prep-arg
+    ROT ROT
+    valid-arg-nums
+    AND
+    JMP2r
+
+@valid-arg-nums ( arg-addr* -- f )  ( nums list ends 00 00 )
+    #01 ,&c STR                 ( c = 1 )
+    STH2                        ( keep arg-addr on RS floor )
+    &next-num
+        LDAkr STHr              ( LOAD char )
+        #00 EQU ,&pass JCN      ( if char = 00, pass )
+
+        .opt LDZ [ LIT &c $1 ]  ( c: count of nums )
+        LTH ,&fail JCN          ( if opt < c, fail )
+
+        STH2r DUP2 scap         ( find num end ) 
+        DUP2 INC2 STH2          ( arg-addr = num end++ )
+        sdec-lthe-max           
+        #00 EQU ,&fail JCN      ( if num > ffff ffff, fail )
+
+        ,&c LDR INC ,&c STR     ( c++ )
+        ,&next-num JMP
+
+    &fail
+        POP2r
+        #00    
+        JMP2r
+
+    &pass
+        POP2r
+        #01
+        JMP2r
 
 
 ~/home/marton/uxn/pebble/src/functions.tal
