@@ -3,9 +3,6 @@
 import sys, os, ultraimport
 ultraimport('__dir__/../tester.py', '*', locals())
 
-def dec_to_ubytelit(num):
-    return ubyte_lit(ubyte(num))
-
 # Given that two strings are saved in memory
 # When seq-til is called with the absolute addresses of these strings and a limit (0 - ff)
 # Then it returns a flag (0/1) whether the 2 strings are equal up to the limit
@@ -24,7 +21,7 @@ def main():
         ['when strings not equal (spaces)', 6, '    ', '       ', False],
         ['when limit max', 255, 'a', 'a', True],
     ]:
-        t.test(case[0], [dec_to_ubytelit(case[1]), us(case[2]), us(case[3])], ubyte(case[4]))  
+        t.test(case[0], [ubyte_lit(case[1]), us(case[2]), us(case[3])], ubyte(case[4]))  
 
     sys.exit(t.fail)    
 

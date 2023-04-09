@@ -1,17 +1,16 @@
 #!/usr/bin/python
 
 import sys, os, ultraimport
-from binascii import hexlify
 ultraimport('__dir__/../tester.py', '*', locals())
 
 def expected(string):
     chunks = string.split(';') 
     if '' in chunks: chunks.remove('')
-    chunks = [ hexlify(c.encode()).decode() for c in chunks ]
+    chunks = [ to_ascii_code(c) for c in chunks ]
     return '00'.join(chunks)
 
 # Given that the args of the add-results command are saved in memory and are well-formed
-# When prep-arg is called with the address of the first char of the string
+# When prep-arg is called with the address of the first char
 # Then it replaces the semicolons with 00 terminators
 def main():
     t = Tester(__file__)

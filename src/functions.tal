@@ -218,7 +218,7 @@ JMP2r
     STH STH2                    ( RS: |opt arg-addr )
     &next-num
         LDAkr STHr              ( LOAD char )
-        #00 EQU ,&pass JCN      ( if char = 00, pass )
+        #00 EQU ,&arr-cap JCN   ( if char = 00, array ended )
 
         ROTkr STHr POP2r        ( opt to WS )
         [ LIT &c $1 ]           ( c: count of nums )
@@ -237,9 +237,14 @@ JMP2r
         #00    
         JMP2r
 
-    &pass
+    &arr-cap
+        ROTr STHkr              ( opt to WS )
+        ,&c LDR #01 SUB         ( c - 1 to compensate for 0 start )
+        NEQ ,&fail JCN          ( if opt != c - 1, fail )
+
         POP2r POPr
-        #01
+        #01                     ( pass )
         JMP2r
+
 
 ~/home/marton/uxn/pebble/src/math32.tal
