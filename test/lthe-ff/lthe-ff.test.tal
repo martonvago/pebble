@@ -1,12 +1,10 @@
 
 ( main )
 |0100
-	;dec-str ;dec-str scap sdec-lthe-max
+	[ [ #6778 #0000 ] ] lthe-ff 
 	print-byte
     #800f DEO 
 BRK
-
-@dec-str [ [ "3 $1 ] ]
 
 
 ~/home/marton/uxn/pebble/src/functions.tal

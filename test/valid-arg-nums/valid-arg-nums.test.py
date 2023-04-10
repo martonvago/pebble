@@ -12,8 +12,7 @@ def prep_input(input):
 # Given that the args of the add-results command are 
     # saved in memory and 
     # are well-formed and
-    # have been parsed into an array (of decimal strings) and
-    # the number of vote options is set [01, ff] and
+    # have been parsed into an array (of decimal strings)
 # When valid-arg-nums is called with the address of the first element and the option number
 # Then it returns True if 
     # all the numbers are representable in 32 bits and

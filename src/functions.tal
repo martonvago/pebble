@@ -9,12 +9,6 @@
 @dup8 ( a^^ b^^ -- a^^ b^^ a^^ b^^ )
     STH2 ROT2k ROT2 STH2 SWP2r STH2kr ROT2 STH2 SWP2 ROT2r STH2r STH2r STH2r JMP2r
 
-@option-invalid ( num -- f )
-    STHk LIT "0 LTH 
-    STHr LIT "2 GTH
-    ORA 
-    JMP2r
-
 @is-digit ( char -- f )
     STHk LITr "0 LTHr LITr 00 EQUr
     LIT "9 GTH #00 EQU
@@ -246,5 +240,60 @@ JMP2r
         #01                     ( pass )
         JMP2r
 
+@lthe-ff ( num^^ -- f )
+    POP
+    ORA ORA
+    #00 EQU 
+    JMP2r  
+
+@valid-vote-arg ( arg-addr* opt -- f )
+    #00 ,&ld-0 STR              ( ld-0 = false )
+    STH STH2 DUP2r              ( RS | opt start start )
+    LDAkr STHkr                 ( load 1st char )
+    #00 EQU ,&fail-cleanup JCN  ( if string empty, fail )
+    
+    STHr LIT "0                 ( WS | char )
+    NEQ ,&next-char JCN         ( if char != 0, start loop )
+    #01 ,&ld-0 STR              ( ld-0 = true )
+    INCr2                       ( move addr to next char )
+
+    &next-char
+        LDAkr STHkr #00         ( load char )
+        EQU ,&cont JCN          ( if str cap, cont )  
+
+        [ LIT &ld-0 $1 ]        ( if 1st char was 0 )
+        ,&fail-cleanup JCN        
+
+        STHr is-digit                       
+        #00 EQU ,&fail JCN      ( if char not a digit, fail )
+
+        INC2r                   ( arg-addr++ )
+        ,&next-char JMP
+
+    &cont
+        POPr 
+        OVR2r                       
+        STH2r STH2kr sdec-lthe-max  ( WS | start end )
+        #00 EQU ,&fail JCN          ( if num > ffff ffff, fail )
+
+        OVR2r STH2r sdec-to-hex     ( WS | start; hex(num) )
+        STHk                        ( stash last byte of hex result ) 
+        lthe-ff                     
+        #00 EQU ,&fail-cleanup JCN  ( if hex result > ff, fail )
+  
+        ROT2r ROTr ROTr LTHr STHkr  ( RS | hex byte < opt )
+        #00 EQU ,&fail JCN
+
+        POPr POP2r POP2r
+        #01         ( pass )
+        JMP2r
+
+    &fail-cleanup
+        POPr
+
+    &fail
+        POP2r POP2r POPr
+        #00 
+        JMP2r
 
 ~/home/marton/uxn/pebble/src/math32.tal

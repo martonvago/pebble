@@ -1,12 +1,12 @@
 
 ( main )
 |0100
-	;dec-str ;dec-str scap sdec-lthe-max
+	;arg [ [ #ff ] ] valid-vote-arg
 	print-byte
     #800f DEO 
 BRK
 
-@dec-str [ [ "3 $1 ] ]
+@arg [ [ "999999999999999999999999999 $1 ] ]
 
 
 ~/home/marton/uxn/pebble/src/functions.tal
