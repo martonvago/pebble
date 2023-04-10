@@ -32,15 +32,6 @@
     STH2r sta4 
     JMP2r
 
-@scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
-
-@slen ( str* -- len^ ) DUP2 ;scap JSR2 SWP2 SUB2 JMP2r
-
-@pinl
-    LDArk STHr DUP #18 DEO
-    INC2r ,pinl JCN
-JMP2r
-
 @seq-til ( a* b* limit[<=ff] -- f ) 
     DUP #00 NEQ ,&setup JCN                 ( end with 01 if limit 0 )
     POP POP2 POP2
@@ -319,5 +310,19 @@ JMP2r
         POP2r POP2r POPr
         #00 
         JMP2r
+
+
+( from lib )
+@scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
+
+@slen ( str* -- len^ ) DUP2 ;scap JSR2 SWP2 SUB2 JMP2r
+
+@pinl
+    LDArk STHr DUP #18 DEO
+    INC2r ,pinl JCN
+JMP2r
+
+@mclr ( src* len^ -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
+
 
 ~/home/marton/uxn/pebble/src/math32.tal
