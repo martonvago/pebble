@@ -9,7 +9,6 @@
 ( zero page )
 |0000
     @opt $1
-    @votes [ &yes $4 &no $4 &invalid $4 ]
 
 ( main )
 |0100
@@ -18,7 +17,8 @@
 BRK
 
 ( variables )
-@command $64 &end $2
+@votes $1024                            ( max ff options, 4 bytes each )
+@command $2828 &end $2                  ( max ff options, each max 11 char + longest command name )
 @ptr :command
 
 ( constants )
@@ -32,14 +32,15 @@ BRK
     #0a EQU ;on-enter JCN2              ( was it enter? )
     
     ;ptr LDA2 ;command/end              ( is the command buffer full? )    
-    EQU2 ,&ignore JCN                   ( if so, ignore remaining chars )
+    EQU2 ,&fail JCN                     ( if so, fail )
     
-
     .Console/read DEI ;ptr LDA2 STA     ( save char )
     ;ptr LDA2k INC2 SWP2 STA2           ( ptr to next address )        
     BRK
 
-    &ignore
+    &fail
+    ( TODO: fail as too long )
+    ;pinl JSR2 "command 20 "too 20 "long 0a $1
 BRK
 
 @on-enter
@@ -63,17 +64,16 @@ BRK
 JMP2r
 
 @do-vote
-    ;command-vote arg-addr                 ( get arg address )
-    LDA DUP                                ( load arg byte )
-    option-invalid #00 EQU ,&cont JCN      ( end if option invalid )
+    ;command-vote arg-addr DUP2 .opt LDZ     ( get arg address )
+    valid-vote-arg ,&cont JCN                ( end if option invalid )
+
+    POP2
     ;pinl JSR2 "invalid 20 "vote 20 "option 0a $1
-    POP
     BRK
 
     &cont
-    #30 SUB                                ( char -> num [0, 2] )
-    #04 MUL .votes ADD                     ( opt*4 + votes addr = option zp addr )
-    inc-zp                                 ( cast vote )    
+    sdec-to-hex NIP2 NIP                    ( choice as byte )
+    choice-addr inc-at-abs                  ( cast vote )    
     ;pinl JSR2 "vote 20 "cast 0a 0a $1
 BRK
 
@@ -81,14 +81,17 @@ BRK
     slen ;command ADD2                     ( ref command length + command addr = arg addr )
 JMP2r
 
-@do-tabulate 
-    #00 ,&c STR         ( num of options )
-    &l
-        ,&c LDR #04 MUL .votes ADD       ( zp addr = votes len - c*4 + votes zp addr )
-        ,&c LDR                   
-        tabulate-option
+@choice-addr ( choice -- choice-addr* )
+    #00 SWP                                 ( choice to short )
+    #0004 MUL2 ;votes ADD2                  ( choice * 4 + votes addr = option addr )
+JMP2r
 
-        ,&c LDR INC DUP ,&c STR      ( c++ )
+@do-tabulate 
+    #00 ,&c STR                            ( choice counter = 0 )
+    &l
+        ,&c LDR tabulate-option
+
+        ,&c LDR INC DUP ,&c STR            ( c++ )
         .opt LDZ 
         LTH ,&l JCN
     &end
@@ -96,15 +99,17 @@ JMP2r
 BRK
 [ &c $1 ]
 
-
-@tabulate-option ( zp-addr opt-num )
+@tabulate-option ( choice )
+    DUP choice-addr ROT
     ;pinl JSR2 "Votes 20 "for 20 "option 20 $1 
-    #30 ADD EMIT ;pinl JSR2 ": 20 $1
-    ldz4 print-decimal
+
+    print-byte-decimal
+    ;pinl JSR2 ": 20 $1
+    
+    lda4 print-decimal
     NL
 JMP2r
 
-( how long can arg max be? ...; 11 chars * 9 options = 99 chars -> 99 bytes )
 @do-add-results 
     valid-addres-arg ,&cont JCN              ( if args invalid, break )
     ;pinl JSR2 "invalid 20 "vote 20 "results 20 "provided 0a $1
@@ -117,11 +122,11 @@ JMP2r
         [ LIT &c $1 ] .opt LDZ LTH
         #00 EQU ,&end JCN
 
-        [ LIT2 &s $2 ] sdec-to-hex
-        ,&c LDR #04 MUL .votes ADD
-        STHk ldz4
+        [ LIT2 &s $2 ] sdec-to-hex 
+        ,&c LDR choice-addr 
+        STH2k lda4 
         add32
-        STHr stz4
+        STH2r sta4  
 
         ,&c LDR INC ,&c STR ( c++ )
         ,&s LDR2 scap INC2  ( s = start of next num )
@@ -141,3 +146,4 @@ BRK
 
 
 ~/home/marton/uxn/pebble/src/functions.tal
+~/home/marton/uxn/pebble/test/test-utils.tal

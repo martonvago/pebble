@@ -65,7 +65,7 @@ class Tester:
     uxn_loc = '/home/marton/uxn/uxn/'
     uxnasm = uxn_loc + 'uxnasm'
     uxncli = uxn_loc + 'uxncli'
-    placeholder = r'\[ \[.*\] \]' 
+    placeholder = r'\[ \[.*?\] \]' 
 
     def __init__(self, file):
         self.filename = abs_path_to_file(file)

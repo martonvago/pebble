@@ -1,13 +1,14 @@
 
 ( main )
 |0100
-	;dec-str ;dec-str scap sdec-lthe-max
-	print-byte
+	[ [ #2300 #0000 ] ] [ [ ;addr2 ] ] sta4
+	;addr1 lda4 print-long
+	;addr2 lda4 print-long
     #800f DEO 
 BRK
 
-@dec-str [ [ "4294967296 $1 ] ]
-
+@addr1 $4
+@addr2 $4
 
 ~/home/marton/uxn/pebble/src/functions.tal
 ~/home/marton/uxn/pebble/test/test-utils.tal

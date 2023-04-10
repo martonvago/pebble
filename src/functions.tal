@@ -15,20 +15,22 @@
     STHr AND    
     JMP2r
 
-@plus-two ( num -- num + 2 )
-    INC INC JMP2r
+@plus-2 ( num^ -- num^ + 2 )
+    INC2 INC2 JMP2r
 
 @inc32 ( long^^ -- long^^ + 1 )
     #0000 #0001 add32 JMP2r
 
-@ldz4 ( zero-page-address -- long^^ )
-    LDZ2k ROT ;plus-two JSR2 LDZ2 JMP2r 
+@lda4 ( abs-address* -- long^^ )
+    STH2k plus-2 LDA2 LDA2r STH2r SWP2 JMP2r
 
-@stz4 ( long^^ zero-page-address -- )
-    STH SWP2 STHkr STZ2 STHr ;plus-two JSR2 STZ2 JMP2r
+@sta4 ( long^^ abs-address* -- )
+    STH2k plus-2 STA2 STH2r STA2 JMP2r
 
-@inc-zp ( zero-page-address -- )
-    STHk ldz4 inc32 STHr stz4 JMP2r
+@inc-at-abs ( abs-address* -- )
+    STH2k lda4 inc32
+    STH2r sta4 
+    JMP2r
 
 @scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
 
@@ -68,6 +70,28 @@ JMP2r
 JMP2r
 [  &counter $1 &limit $1 ]
     
+@print-byte-decimal ( byte -- )
+    DUP
+    #00 EQU ,&zero JCN
+
+    #00 ,&z STR
+    #64 ,&parse JSR   ( 100 )
+    #0a ,&parse JSR   ( 10 )
+    
+    &emit
+        DUP [ LIT &z $1 ] EQU ,&skip JCN
+            #ff ,&z STR DUP #30 ADD #18 DEO
+            &skip
+        POP
+        JMP2r
+    &parse
+        DIVk DUP ,&emit JSR MUL SUB
+        JMP2r
+    &zero
+        POP
+        #30 #18 DEO
+        JMP2r
+
 @print-decimal ( long^^ -- )
     dup4
     non-zero32 ,&cont JCN
