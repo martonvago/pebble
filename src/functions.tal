@@ -32,6 +32,13 @@
     STH2r sta4 
     JMP2r
 
+@tertiary ( val1* val2* flag -- flag ? val1 : val2 )
+    ,&val1 JCN NIP2 JMP2r
+    &val1 POP2 JMP2r
+
+@print-line ( str* -- )
+    print-string #0a #18 DEO JMP2r
+
 @seq-til ( a* b* limit[<=ff] -- f ) 
     DUP #00 NEQ ,&setup JCN                 ( end with 01 if limit 0 )
     POP POP2 POP2
@@ -324,5 +331,13 @@ JMP2r
 
 @mclr ( src* len^ -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
 
+@print-string ( str* -- )
+
+    &w
+        LDAk #18 DEO
+        INC2 LDAk ,&w JCN
+    POP2
+
+JMP2r
 
 ~/home/marton/uxn/pebble/src/math32.tal

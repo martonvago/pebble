@@ -1,3 +1,6 @@
+( structs )
+|00 @command &name $2 &in-voting $1 &length
+
 ( devices )
 |10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
 
@@ -15,28 +18,49 @@
 ( main )
 |0100
     #03 .opt STZ
+    ;dict/prompt print-string
     ;on-input .Console/vector DEO2 
 BRK
 
 ( variables )
 @votes $1024                            ( max ff options, 4 bytes each )
-@command $2828 &end $2                  ( max ff options, each max 11 char + longest command name )
-@ptr :command
+@input $2828 &end $2                  ( max ff options, each max 11 char + longest command name )
+@ptr :input
 
 ( constants )
-@command-start "start 20 "vote $1
-@command-end "end 20 "vote $1
-@command-next "next 20 "voter $1
-@command-vote "vote 20 $1
-@command-addres "add 20 "results 20 $1
-@command-tabulate "tabulate $1
+@commands ( name* in-voting )
+    &start  :dict/start  00
+    &endv   :dict/endv   01
+    &next   :dict/next   01
+    &vote   :dict/vote   01
+    &res    :dict/res    00
+    &tab    :dict/tab    00
+    &end
+
+@dict
+    &start  "start 20 "vote $1 
+    &endv   "end 20 "vote $1
+    &next   "next 20 "voter $1
+    &vote   "vote 20 $1
+    &res    "add 20 "results 20 $1
+    &tab    "tabulate $1
+    &vinp   "Vote 20 "currently 20 "in 20 "progress $1
+    &novinp "No 20 "vote 20 "in 20 "progress $1
+    &unrec  "Command 20 "not 20 "recognised $1
+    &prompt ">> 20 $1
+    &cast   "Vote 20 "cast $1
+    &verr   "Invalid 20 "vote 20 "option $1
+    &notrdy "Not 20 "ready 20 "for 20 "next 20 "voter $1
+    &tabln  "Votes 20 "for 20 "option 20 $1 
+    &terr   "Invalid 20 "vote 20 "results 20 "provided $1
+    &col    ": 20 $1
 
 ( subroutines )
 @on-input                               ( called for each char after submitted via enter )
     .Console/read DEI                   ( read char )
     #0a EQU ;on-enter JCN2              ( was it enter? )
     
-    ;ptr LDA2 ;command/end              ( is the command buffer full? )    
+    ;ptr LDA2 ;input/end              ( is the command buffer full? )    
     EQU2 ,&fail JCN                     ( if so, fail )
     
     .Console/read DEI ;ptr LDA2 STA     ( save char )
@@ -50,96 +74,101 @@ BRK
 
 @on-enter
     #00 ;ptr LDA2 STA                 	( null terminate str )
-    ;command ;ptr STA2                	( reset ptr )  
+    ;input ;ptr STA2                	( reset ptr )  
     
-    ;command-start is-command ;do-start-vote JCN2       	
-    ;command-end is-command ;do-end-vote JCN2           
-    ;command-next is-command ;do-next-voter JCN2           
-    ;command-vote is-command ;do-vote JCN2          ( if command vote-command, go to that subroutine )
-    ;command-tabulate is-command ;do-tabulate JCN2   
-    ;command-addres is-command ;do-add-results JCN2   
+    ;commands/start ;do-start-vote if-match     	
+    ;commands/endv ;do-end-vote if-match           
+    ;commands/next ;do-next-voter if-match           
+    ;commands/vote ;do-vote if-match         
+    ;commands/tab ;do-tabulate if-match   
+    ;commands/res ;do-add-results if-match   
 
-    ( TODO: clear command buff )
-
-    ;pinl JSR2 "command 20 "not 20 "recognised 0a $1
+    ;dict/unrec print-line
+    command-done
 
 BRK
 
-@is-command ( *reference command -- f )
+@if-match ( *command *command-func -- )
+    STH2 
+    DUP2 is-command #00 EQU ,&no-match JCN
+
+    ;command/in-voting ADD2 LDA     ( if command is meant to be issued while voting )
+    .voting LDZ                     ( if currently voting )
+    NEQ ,&illegal JCN
+
+    STH2r JSR2 ( execute command )
+    command-done
+    BRK
+
+    &illegal
+        POP2r
+        ;dict/vinp ;dict/novinp .voting LDZ tertiary
+        print-line
+        command-done
+        BRK
+    &no-match
+        POP2r POP2
+        JMP2r
+
+@command-done
+    ;input #0b0c mclr                ( clear command buff )
+    ;dict/prompt print-string
+JMP2r
+
+@is-command ( *command -- f )
+    LDA2
     DUP2 slen NIP                        ( ref command length <= ff )
-    ;command ROT
+    ;input ROT
     seq-til                              ( does the input match the command body? )   
 JMP2r
 
-@do-start-vote
-    .voting LDZ ,&vote-in-p JCN
-    
+@do-start-vote    
     ( if arg not empty fail )
     reset-vote
     #01 .voting STZ    
     enable-next-voter
-    BRK
-
-    &vote-in-p
-        ;pinl JSR2 "Vote 20 "currently 20 "in 20 "progress 0a $1
-BRK
+JMP2r
 
 @reset-vote
     ;votes #0400 mclr        ( len of all votes = 1024 )
 JMP2r
 
 @do-end-vote
-    .voting LDZ #00 EQU ,&not-voting JCN
-
     ( if arg not empty fail )
     #00 .voting STZ    
-    BRK
-
-    &not-voting
-        ;pinl JSR2 "No 20 "vote 20 "in 20 "progress 0a $1
-BRK
+JMP2r
 
 @enable-next-voter
     #01 .can-vote STZ 
 JMP2r
 
 @do-next-voter
-    .voting LDZ #00 EQU ,&not-voting JCN
-    
     ( if arg not empty fail )
     enable-next-voter
-    BRK
-
-    &not-voting
-        ;pinl JSR2 "No 20 "vote 20 "in 20 "progress 0a $1
-BRK
+JMP2r
 
 @do-vote
-    .voting LDZ #00 EQU ,&not-voting JCN
     .can-vote LDZ #00 EQU ,&cannot-vote JCN
 
-    ;command-vote arg-addr DUP2 .opt LDZ     ( get arg address )
+    ;commands/vote arg-addr DUP2 .opt LDZ     ( get arg address )
     valid-vote-arg #00 EQU ,&invalid-arg JCN ( end if option invalid )
 
     sdec-to-hex NIP2 NIP                    ( choice as byte )
     choice-addr inc-at-abs                  ( cast vote )    
-    ;pinl JSR2 "vote 20 "cast 0a 0a $1
+    ;dict/cast print-line 
     #00 .can-vote STZ 
-    BRK   
+    JMP2r   
 
     &invalid-arg
         POP2
-        ;pinl JSR2 "invalid 20 "vote 20 "option 0a $1
-        BRK
-    &not-voting
-        ;pinl JSR2 "No 20 "vote 20 "in 20 "progress 0a $1
-        BRK
+        ;dict/verr print-line
+        JMP2r
     &cannot-vote
-        ;pinl JSR2 "Not 20 "ready 20 "for 20 "next 20 "voter 0a $1
-BRK
+        ;dict/notrdy print-line
+JMP2r
 
-@arg-addr ( *reference command -- arg* )
-    slen ;command ADD2                     ( ref command length + command addr = arg addr )
+@arg-addr ( *command -- arg* )
+    LDA2 slen ;input ADD2                     ( ref command length + command addr = arg addr )
 JMP2r
 
 @choice-addr ( choice -- choice-addr* )
@@ -148,8 +177,6 @@ JMP2r
 JMP2r
 
 @do-tabulate 
-    .voting LDZ ,&vote-in-p JCN
-
     #00 ,&c STR                            ( choice counter = 0 )
     &l
         ,&c LDR tabulate-option
@@ -157,34 +184,27 @@ JMP2r
         ,&c LDR INC DUP ,&c STR            ( c++ )
         .opt LDZ 
         LTH ,&l JCN
-    NL
-    BRK
-
-    &vote-in-p
-        ;pinl JSR2 "Vote 20 "currently 20 "in 20 "progress 0a $1
-BRK
+JMP2r
 [ &c $1 ]
 
 @tabulate-option ( choice )
     DUP choice-addr ROT
-    ;pinl JSR2 "Votes 20 "for 20 "option 20 $1 
+    ;dict/tabln print-string
 
     print-byte-decimal
-    ;pinl JSR2 ": 20 $1
+    ;dict/col print-string
     
     lda4 print-decimal
     NL
 JMP2r
 
 @do-add-results
-    .voting LDZ ,&vote-in-p JCN
-
     valid-addres-arg ,&cont JCN              ( if args invalid, break )
-    ;pinl JSR2 "invalid 20 "vote 20 "results 20 "provided 0a $1
-    BRK
+    ;dict/terr print-line
+    JMP2r
 
     &cont
-    ;command-addres arg-addr ,&s STR2
+    ;commands/res arg-addr ,&s STR2
     #00 ,&c STR
     &next-num
         [ LIT &c $1 ] .opt LDZ LTH
@@ -202,14 +222,10 @@ JMP2r
         ,&next-num JMP
 
     &end
-        BRK
-
-    &vote-in-p
-        ;pinl JSR2 "Vote 20 "currently 20 "in 20 "progress 0a $1
-BRK
+JMP2r
 
 @valid-addres-arg ( -- f )
-    ;command-addres arg-addr DUP2
+    ;commands/res arg-addr DUP2
     prep-arg
     ROT ROT
     .opt LDZ valid-arg-nums
@@ -218,3 +234,4 @@ BRK
 
 
 ~/home/marton/uxn/pebble/src/functions.tal
+~/home/marton/uxn/pebble/test/test-utils.tal
