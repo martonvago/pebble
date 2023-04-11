@@ -23,10 +23,9 @@
 BRK
 
 ( variables )
-@votes $1024                            ( max ff options, 4 bytes each )
-@input $2828 &overflow $1               ( max ff options, each max 11 char + longest command name )
-@ptr :input
-@inputnew 0b0c &body $2828 &overflow $1
+@votes 0400 &body $1024                 ( max ff options, 4 bytes each )
+@input 0b0c &body $2828 &overflow $1    ( max ff options, each max 11 char + longest command name )
+@ptr :input/body
 
 ( constants )
 @commands ( name* in-voting )
@@ -114,16 +113,16 @@ BRK
         JMP2r                       ( there are still other commands to check against )
 
 @command-done
-    ;input ;ptr STA2                 ( reset ptr )  
+    ;input/body ;ptr STA2            ( reset ptr )  
     #00 ;input/overflow STA          ( reset overflow )  
-    ;input #0b0c mclr                ( clear input buffer )
+    ;input/body ;input LDA2 mclr     ( clear input buffer )
     ;dict/prompt print-string
 JMP2r
 
 @is-command ( *command -- f )
     LDA2
     DUP2 slen NIP                        ( ref command length <= ff )
-    ;input ROT
+    ;input/body ROT
     seq-til                              ( does the input match the command name? )   
 JMP2r
 
@@ -135,7 +134,7 @@ JMP2r
 JMP2r
 
 @reset-vote
-    ;votes #0400 mclr        ( len of all votes = 1024 )
+    ;votes/body ;votes LDA2 mclr        
 JMP2r
 
 @do-end-vote
@@ -173,12 +172,12 @@ JMP2r
 JMP2r
 
 @arg-addr ( *command -- arg* )
-    LDA2 slen ;input ADD2                     ( ref command length + command addr = arg addr )
+    LDA2 slen ;input/body ADD2              ( ref command length + command addr = arg addr )
 JMP2r
 
 @choice-addr ( choice -- choice-addr* )
     #00 SWP                                 ( choice to short )
-    #0004 MUL2 ;votes ADD2                  ( choice * 4 + votes addr = option addr )
+    #0004 MUL2 ;votes/body ADD2             ( choice * 4 + votes addr = option addr )
 JMP2r
 
 @do-tabulate 
