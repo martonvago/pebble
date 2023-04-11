@@ -24,8 +24,9 @@ BRK
 
 ( variables )
 @votes $1024                            ( max ff options, 4 bytes each )
-@input $2828 &end $2                  ( max ff options, each max 11 char + longest command name )
+@input $2828 &overflow $1               ( max ff options, each max 11 char + longest command name )
 @ptr :input
+@inputnew 0b0c &body $2828 &overflow $1
 
 ( constants )
 @commands ( name* in-voting )
@@ -56,62 +57,66 @@ BRK
     &col    ": 20 $1
 
 ( subroutines )
-@on-input                               ( called for each char after submitted via enter )
+@on-input                               ( called for each char on submit )
     .Console/read DEI                   ( read char )
     #0a EQU ;on-enter JCN2              ( was it enter? )
     
-    ;ptr LDA2 ;input/end              ( is the command buffer full? )    
-    EQU2 ,&fail JCN                     ( if so, fail )
+    ;input/overflow LDA #00 
+    NEQ ,&ignore-char JCN               ( if buffer already overflowing, stop saving chars )
     
     .Console/read DEI ;ptr LDA2 STA     ( save char )
-    ;ptr LDA2k INC2 SWP2 STA2           ( ptr to next address )        
-    BRK
+    ;ptr LDA2k INC2 SWP2 STA2           ( ptr++ )        
+    BRK                                 ( wait for next char )           
 
-    &fail
-    ( TODO: fail as too long )
-    ;pinl JSR2 "command 20 "too 20 "long 0a $1
+    &ignore-char
 BRK
 
 @on-enter
-    #00 ;ptr LDA2 STA                 	( null terminate str )
-    ;input ;ptr STA2                	( reset ptr )  
+    ;input/overflow LDA #00 
+    NEQ ,&unrecognised JCN              ( if buffer overflowing, reject input )
+                                        ( otherwise process input )    
+    #00 ;ptr LDA2 STA                 	( null terminate input str )
     
-    ;commands/start ;do-start-vote if-match     	
+    ;commands/start ;do-start-vote if-match  ( try to match input to a command )   	
     ;commands/endv ;do-end-vote if-match           
     ;commands/next ;do-next-voter if-match           
     ;commands/vote ;do-vote if-match         
     ;commands/tab ;do-tabulate if-match   
     ;commands/res ;do-add-results if-match   
 
-    ;dict/unrec print-line
-    command-done
+    &unrecognised
+        ;dict/unrec print-line
+        command-done                    ( finished with input )
 
 BRK
 
 @if-match ( *command *command-func -- )
-    STH2 
-    DUP2 is-command #00 EQU ,&no-match JCN
+    STH2                            ( stash func )
+    DUP2 is-command 
+    #00 EQU ,&no-match JCN          ( if no match, return )
 
     ;command/in-voting ADD2 LDA     ( if command is meant to be issued while voting )
     .voting LDZ                     ( if currently voting )
     NEQ ,&illegal JCN
 
-    STH2r JSR2 ( execute command )
-    command-done
+    STH2r JSR2                      ( execute func )
+    command-done                    ( finished with input )
     BRK
 
     &illegal
         POP2r
         ;dict/vinp ;dict/novinp .voting LDZ tertiary
         print-line
-        command-done
+        command-done                ( finished with input )
         BRK
     &no-match
         POP2r POP2
-        JMP2r
+        JMP2r                       ( there are still other commands to check against )
 
 @command-done
-    ;input #0b0c mclr                ( clear command buff )
+    ;input ;ptr STA2                 ( reset ptr )  
+    #00 ;input/overflow STA          ( reset overflow )  
+    ;input #0b0c mclr                ( clear input buffer )
     ;dict/prompt print-string
 JMP2r
 
@@ -119,7 +124,7 @@ JMP2r
     LDA2
     DUP2 slen NIP                        ( ref command length <= ff )
     ;input ROT
-    seq-til                              ( does the input match the command body? )   
+    seq-til                              ( does the input match the command name? )   
 JMP2r
 
 @do-start-vote    
