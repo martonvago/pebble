@@ -3,21 +3,28 @@
 import sys, os, ultraimport
 ultraimport('__dir__/../tester.py', '*', locals())
 
-def expected(string):
-    chunks = string.split(';') 
-    if '' in chunks: chunks.remove('')
-    chunks = [ to_ascii_code(c) for c in chunks ]
-    return '00'.join(chunks)
-
 # Given that the args of the add-results command are saved in memory and are well-formed
-# When prep-arg is called with the address of the first char
+# When prep-arg is called with the address of the first char and the array cap
 # Then it replaces the semicolons with 00 terminators
 def main():
     t = Tester(__file__)
 
-    for case in ['0', '0;', '00', '00;', '2', '2;', '1;2;3;', '1;2;3', '33;44;55;66', '00023;12321;0;12;1232', 
-        f'{MAX_NUM};', f'{MAX_NUM + 1};', f'{MAX_NUM};{MAX_NUM}', f'{MAX_NUM};' * 9 ]:
-        t.test(case, [us(case)], expected(case)) 
+    cases = [
+        ['array full: no ; at arg end', ['0005', '"1;2;3'], '3100320033'],
+        ['array not full: no ; at arg end', ['0006', '"1;2;3 00'], '310032003300'],
+        ['array full: ; at arg end', ['0006', '"1;2;3;'], '310032003300'],
+        ['array not full: ; at arg end', ['0007', '"1;2;3; 00'], '31003200330000'],
+        ['0-length array', ['0000', ''], ''],
+        ['array with multi-digit numbers', ['0018', '"00023;12321;0;12;1232 00 00 00'], '303030323300313233323100300031320031323332000000'],
+        [
+            'maximum add-results arg', 
+            [format(INPUT_LEN - MAX_COMMAND_NAME_LEN, '04x'), us(f'{MAX_NUM};' * MAX_OPTIONS)[:-3]], 
+            f'{"3432393439363732393500" * MAX_OPTIONS}'
+        ],
+    ]
+
+    for case in cases:
+        t.test(*case)
 
     sys.exit(t.fail)    
 

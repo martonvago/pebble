@@ -36,6 +36,13 @@
     ,&val1 JCN NIP2 JMP2r
     &val1 POP2 JMP2r
 
+@arr-cap ( arr* -- f )
+    LDA2k SWP2 arr-body ADD2            ( len + ;arr/body )
+    JMP2r
+
+@arr-body ( arr* -- body* )
+    plus-2 JMP2r   
+
 @print-line ( str* -- )
     print-string #0a #18 DEO JMP2r
 
@@ -188,25 +195,23 @@ JMP2r
 
 JMP2r
 
-@prep-arg ( arg-addr* -- f )
+@prep-arg ( arg-addr* arr-cap^ -- f )
     #00 ,&sep-ok STR            ( sep-ok = false )
-
-    STH2                        ( keep arg-addr on RS floor )
-    LDAkr STHr #00              ( load 1st char )
-    EQU ,&fail JCN              ( if string empty, fail )
+    ,&arr-cap STR2
+    STH2               ( RS: | addr )
 
     &next-char
-        LDAkr STHkr #00         ( load char )
-        EQU ,&pass JCN          ( if char = 00, pass )  
+        STH2kr [ LIT2 &arr-cap $2 ] 
+        no-more-content ,&pass JCN  
 
-        STHkr LIT ";
+        LDAkr STHkr LIT ";      ( load char )
         EQU ,&sep-check JCN     ( if char = ;, terminate num )
 
         STHr is-digit                       
         #00 EQU ,&fail JCN      ( if char not a digit, fail )  
 
         #01 ,&sep-ok STR        ( sep-ok = true )
-        INC2r                   ( arg-addr++ )
+        INC2r                   ( addr++ )
         ,&next-char JMP
 
         &sep-check
@@ -216,7 +221,7 @@ JMP2r
 
             #00 STH2kr STA      ( terminate num with 00 )
             #00 ,&sep-ok STR    ( sep-ok = false )
-            INC2r               ( arg-addr++ )
+            INC2r               ( addr++ )
             ,&next-char JMP
 
         &fail
@@ -225,42 +230,72 @@ JMP2r
             JMP2r
 
         &pass
-            POPr POP2r
+            POP2r
             #01
             JMP2r
 
-@valid-arg-nums ( arg-addr* opt -- f )  ( nums list ends 00 00 )
-    #01 ,&c STR                 ( c = 1 )
-    STH STH2                    ( RS: |opt arg-addr )
-    &next-num
-        LDAkr STHr              ( LOAD char )
-        #00 EQU ,&arr-cap JCN   ( if char = 00, array ended )
+@no-more-content ( ptr^[into arr] arr-cap* -- f )
+    SWP2
+    &next-byte
+        GTH2k
+        #00 EQU ,&true JCN        ( arr-cap <= ptr )
 
-        ROTkr STHr POP2r        ( opt to WS )
+        LDAk
+        #00 NEQ ,&false JCN
+        INC2
+        ,&next-byte JMP
+    &false
+        pop4
+        #00
+        JMP2r
+    &true
+        pop4
+        #01
+JMP2r
+
+@valid-arg-nums ( arg-addr* arr-cap^ opt -- f )
+    #01 ,&c STR                 ( c = 1 )
+    ,&opt STR                   ( opt = opt )
+    ,&arr-cap STR2
+    STH2                        ( RS: | addr )
+    &next-num
+        STH2kr [ LIT2 &arr-cap $2 ] 
+        no-more-content ,&fin JCN
+
+        [ LIT &opt $1 ]         ( opt: number of options )
         [ LIT &c $1 ]           ( c: count of nums )
         LTH ,&fail JCN          ( if opt < c, fail )
 
-        STH2r DUP2 scap         ( find num end ) 
-        DUP2 INC2 STH2          ( arg-addr = num end++ )
+        STH2r DUP2 ,&num-cap JSR ( calc num cap and return here ) 
+        DUP2 INC2 STH2          ( addr = num cap++ )
         sdec-lthe-max           
         #00 EQU ,&fail JCN      ( if num > ffff ffff, fail )
 
         ,&c LDR INC ,&c STR     ( c++ )
         ,&next-num JMP
 
+    &num-cap ( ptr* -- num cap )
+        INC2                    ( ptr++ )
+        LDAk #00 NEQ STH            ( byte != 00 )
+        DUP2
+        ,&arr-cap LDR2 NEQ2     ( ptr != arr cap )
+        STHr
+        AND ,&num-cap JCN
+        JMP2r
+
     &fail
-        POP2r POPr
+        POP2r
         #00    
         JMP2r
 
-    &arr-cap
-        ROTr STHkr              ( opt to WS )
+    &fin
+        ,&opt LDR   
         ,&c LDR #01 SUB         ( c - 1 to compensate for 0 start )
         NEQ ,&fail JCN          ( if opt != c - 1, fail )
 
-        POP2r POPr
+        POP2r
         #01                     ( pass )
-        JMP2r
+JMP2r
 
 @lthe-ff ( num^^ -- f )
     POP

@@ -12,16 +12,18 @@ JMP2r
 JMP2r
 
 @print-array ( arr* -- )
-    STH2
+    DUP2
+    arr-cap ,&arr-cap STR2
+    arr-body STH2
     &next-byte
-        LDA2kr STH2r #0000 
-        EQU2 ,&end JCN
+        STH2kr [ LIT2 &arr-cap $2 ]
+        EQU2 ,&done JCN
 
         LDAkr STHr print-byte
 
         INC2r
         ,&next-byte JMP
         
-        &end
+        &done
         POP2r
 JMP2r

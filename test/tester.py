@@ -11,6 +11,10 @@ from colorama import Style
 colorama_init()
 
 MAX_NUM = (1 << 32) - 1
+VOTES_LEN = 1024
+MAX_COMMAND_NAME_LEN = 12
+MAX_OPTIONS = 1 << 8
+INPUT_LEN = 2828
 
 def hex8(num):
     return '{0:08x}'.format(num)
@@ -27,10 +31,6 @@ def ushort_lit(string):
 
 def ubyte(num):
     return format(num, '02x')
-
-def uarray(elements):
-    res = '00'.join(elements) + '0000'
-    return ' '.join(split_str_to_chunks(res, 2))
 
 def split_str_to_chunks(string, size):
     result = []

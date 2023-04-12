@@ -1,12 +1,14 @@
 
 ( main )
 |0100
-	;arr/body ;arr arr-cap prep-arg  
+	;arr/body [ [ #0002 ] ] ADD2
+	;arr arr-cap no-more-content
 	print-byte
     #800f DEO 
 BRK
 
-@arr [ [ 0005 ] ] &body [ [ 00 00 "1;2 ] ]
+@arr [ [ 0006 ] ] &body [ [ 11 22 33 00 00 00 ] ]
+
 
 ~/home/marton/uxn/pebble/src/functions.tal
 ~/home/marton/uxn/pebble/test/test-utils.tal

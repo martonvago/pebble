@@ -23,8 +23,8 @@
 BRK
 
 ( variables )
-@votes 0400 &body $1024                 ( max ff options, 4 bytes each )
-@input 0b0c &body $2828 &overflow $1    ( max ff options, each max 11 char + longest command name )
+@votes 0400 &body $1024                 ( max 256 options, 4 bytes each )
+@input 0b0c &body $2828 &overflow $1    ( max 256 options, each max 11 char + longest command name )
 @ptr :input/body
 
 ( constants )
@@ -229,13 +229,14 @@ JMP2r
 JMP2r
 
 @valid-addres-arg ( -- f )
-    ;commands/res arg-addr DUP2
+    ;commands/res arg-addr DUP2 ( results addr )
+    ;input arr-cap STH2k        ( arr cap )
     prep-arg
     ROT ROT
+    STH2r                       ( arr cap )
     .opt LDZ valid-arg-nums
     AND
     JMP2r
 
 
 ~/home/marton/uxn/pebble/src/functions.tal
-~/home/marton/uxn/pebble/test/test-utils.tal
