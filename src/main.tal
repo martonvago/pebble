@@ -100,6 +100,7 @@ BRK
 
     STH2r JSR2                      ( execute func )
     command-done                    ( finished with input )
+    POP2r
     BRK
 
     &illegal
@@ -107,6 +108,7 @@ BRK
         ;dict/vinp ;dict/novinp .voting LDZ tertiary
         print-line
         command-done                ( finished with input )
+        POP2r
         BRK
     &no-match
         POP2r POP2

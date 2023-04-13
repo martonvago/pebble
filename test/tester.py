@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from subprocess import run, DEVNULL, call, Popen, PIPE
+from subprocess import run, DEVNULL, call, Popen, PIPE, TimeoutExpired
 import re, os, sys
 from binascii import hexlify
 
@@ -10,11 +10,13 @@ from colorama import Style
 
 colorama_init()
 
+NL = '\n'
 MAX_NUM = (1 << 32) - 1
 VOTES_LEN = 1024
 MAX_COMMAND_NAME_LEN = 12
 MAX_OPTIONS = 1 << 8
 INPUT_LEN = 2828
+OPT = 3                 # hard coded until setup command impl
 
 def hex8(num):
     return '{0:08x}'.format(num)
@@ -72,16 +74,19 @@ class Tester:
         self.rom = self.filename + '.rom'
         self.fail = False
 
-    def interact(self, name, inputs, expected):
+    def interact(self, name, inputs, expected, wait=0.1):
         self._assemble()
         p = Popen([self.uxncli, self.rom], stdin=PIPE, stdout=PIPE)
-        for inp in inputs:
-            p.stdin.write(inp.encode() + b'\n')                                  
-            p.stdin.flush()
-        got = p.stdout.readline().decode('utf-8').replace('>> ', '')
-        p.stdin.close()
-        p.stdout.close()
+        
+        try:
+            inputs = (NL.join(inputs) + NL).encode()
+            got, errs = p.communicate(inputs, timeout=wait)
+        except TimeoutExpired:
+            p.kill()
+            got, errs = p.communicate()
+
         p.kill()
+        got = got.decode('utf-8').replace('>> ', '')
         self._check_results(name, got, expected)
 
     def test(self, name, inputs, expected):
