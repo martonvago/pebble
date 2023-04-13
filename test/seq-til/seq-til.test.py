@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, os, ultraimport
+import os, ultraimport
 ultraimport('__dir__/../tester.py', '*', locals())
 
 # Given that two strings are saved in memory
@@ -23,7 +23,7 @@ def main():
     ]:
         t.test(case[0], [ubyte_lit(case[1]), us(case[2]), us(case[3])], ubyte(case[4]))  
 
-    sys.exit(t.fail)    
+    t.done()    
 
 
 if __name__ == "__main__":

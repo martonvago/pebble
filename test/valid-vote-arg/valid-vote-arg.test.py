@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, os, ultraimport
+import os, ultraimport
 ultraimport('__dir__/../tester.py', '*', locals())
 
 def prep_input(input):
@@ -50,7 +50,7 @@ def main():
     for case in fails:
         t.test(case[0], prep_input(case[1]), ubyte(False)) 
 
-    sys.exit(t.fail)    
+    t.done()    
 
 
 if __name__ == "__main__":

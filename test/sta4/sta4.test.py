@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, os, ultraimport
+import os, ultraimport
 ultraimport('__dir__/../tester.py', '*', locals())
 
 # Given that there is a long on the WS
@@ -17,7 +17,7 @@ def main():
         t.test(f'{case} to first addr', [ushort_lit(case), addr1], case + '00000000')  
         t.test(f'{case} to second addr', [ushort_lit(case), addr2], '00000000' + case)  
 
-    sys.exit(t.fail)    
+    t.done()    
 
 
 if __name__ == "__main__":

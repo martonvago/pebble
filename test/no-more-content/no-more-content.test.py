@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, os, ultraimport
+import os, ultraimport
 ultraimport('__dir__/../tester.py', '*', locals())
 
 # Given that an array is saved in memory
@@ -33,7 +33,7 @@ def main():
     for case in more:
         t.test(*case, ubyte(False)) 
 
-    sys.exit(t.fail)    
+    t.done()    
 
 
 if __name__ == "__main__":

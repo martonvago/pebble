@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, os, ultraimport
+import os, ultraimport
 ultraimport('__dir__/../tester.py', '*', locals())
 
 def arr(votes):
@@ -48,7 +48,7 @@ def main():
     for case in fails:
         t.test(*case, ubyte(False))
 
-    sys.exit(t.fail)    
+    t.done()    
 
 
 if __name__ == "__main__":

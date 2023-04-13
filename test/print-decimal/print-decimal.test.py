@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, os, ultraimport
+import os, ultraimport
 ultraimport('__dir__/../tester.py', '*', locals())
 
 
@@ -13,7 +13,7 @@ def main():
     for hex_string in ['00000000', '00000001', '00000002', '10000000', '00001000', '0000abdf', 'ffffffff']:
         t.test(hex_string, [ushort_lit(hex_string)], str(int(hex_string, 16)))
 
-    sys.exit(t.fail)    
+    t.done()    
 
 if __name__ == "__main__":
     main()

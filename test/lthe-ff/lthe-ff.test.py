@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, os, ultraimport
+import os, ultraimport
 ultraimport('__dir__/../tester.py', '*', locals())
 
 # Given that a long is on the WS
@@ -18,7 +18,7 @@ def main():
     for case in fails:
         t.test(case, [ushort_lit(case)], ubyte(False))  
 
-    sys.exit(t.fail)    
+    t.done()    
 
 
 if __name__ == "__main__":

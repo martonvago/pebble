@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-from subprocess import run, DEVNULL, call
-import re, os
+from subprocess import run, DEVNULL, call, Popen, PIPE
+import re, os, sys
 from binascii import hexlify
 
 from colorama import init as colorama_init
@@ -72,6 +72,18 @@ class Tester:
         self.rom = self.filename + '.rom'
         self.fail = False
 
+    def interact(self, name, inputs, expected):
+        self._assemble()
+        p = Popen([self.uxncli, self.rom], stdin=PIPE, stdout=PIPE)
+        for inp in inputs:
+            p.stdin.write(inp.encode() + b'\n')                                  
+            p.stdin.flush()
+        got = p.stdout.readline().decode('utf-8').replace('>> ', '')
+        p.stdin.close()
+        p.stdout.close()
+        p.kill()
+        self._check_results(name, got, expected)
+
     def test(self, name, inputs, expected):
         with open(self.filename, 'r+') as f:
             file = f.read()
@@ -81,11 +93,19 @@ class Tester:
             f.write(file)
             f.truncate()
 
-        run([self.uxnasm, self.filename, self.rom], stderr = DEVNULL)
+        self._assemble()
         result = run([self.uxncli, self.rom], capture_output = True)
         
         got = result.stdout.decode('utf-8')
+        self._check_results(name, got, expected)
 
+    def done(self):
+        sys.exit(self.fail)
+
+    def _assemble(self):
+        run([self.uxnasm, self.filename, self.rom], stderr = DEVNULL)
+
+    def _check_results(self, name, got, expected):
         if got == expected:
             print(f"{Fore.GREEN}{name}: passed{Style.RESET_ALL}")
         else:

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, os, ultraimport
+import os, ultraimport
 ultraimport('__dir__/../tester.py', '*', locals())
 
 # Given that a decimal string is saved in memory
@@ -17,7 +17,7 @@ def main():
     # > ffff ffff
     t.test('overflow', [us(MAX_NUM + 1)], '00000000')        
 
-    sys.exit(t.fail)    
+    t.done()    
 
 
 if __name__ == "__main__":

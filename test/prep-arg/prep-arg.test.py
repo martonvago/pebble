@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, os, ultraimport
+import os, ultraimport
 ultraimport('__dir__/../tester.py', '*', locals())
 
 # Given that the args of the add-results command are saved in memory
@@ -45,7 +45,7 @@ def main():
     for case in fails:
         t.test(*case, ubyte(False)) 
 
-    sys.exit(t.fail)    
+    t.done()    
 
 
 if __name__ == "__main__":
