@@ -119,11 +119,29 @@ BRK
     ;dict/prompt print-string
 JMP2r
 
+@exp-arg ( *command -- f )
+    LDA2 scap #0001 SUB2 LDA            ( last char in command name )
+    #20 EQU                             ( if space, expects arg )
+    JMP2r
+
+@has-arg ( *command -- f )
+    arg-addr LDA                        ( first char of arguments )
+    #00 NEQ  
+    JMP2r
+
+@args-ok ( *command -- f )
+    DUP2 exp-arg
+    ROT ROT has-arg
+    EQU
+JMP2r
+
 @is-command ( *command -- f )
-    LDA2
+    LDA2k
     DUP2 slen NIP                        ( ref command length <= ff )
     ;input/body ROT
-    seq-til                              ( does the input match the command name? )   
+    seq-til                              ( does the input match the command name? )  
+    ROT ROT args-ok
+    AND 
 JMP2r
 
 @do-start-vote    

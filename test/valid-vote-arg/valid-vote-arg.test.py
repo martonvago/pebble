@@ -29,7 +29,8 @@ def main():
     fails = [
         ['non-numeric arg', [3, 'a']],
         ['non-numeric arg 2', [MAX_OPT, '1a']],
-        ['empty arg', [3, '']],
+        ['non-0 options with empty arg', [3, '']],
+        ['0 options with empty arg', [0, '']],
         ['00', [3, '00']],
         ['000', [3, '000']],
         ['000000', [3, '000000']],
