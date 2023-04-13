@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import os, ultraimport
-ultraimport('__dir__/../tester.py', '*', locals())
+ultraimport('__dir__/../../tester.py', '*', locals())
 
 # Given that the args of the add-results command are saved in memory and are well-formed
 # When prep-arg is called with the address of the first char and the array cap

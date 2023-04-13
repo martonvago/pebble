@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import os, ultraimport
-ultraimport('__dir__/../tester.py', '*', locals())
+ultraimport('__dir__/../../tester.py', '*', locals())
 
 def prep_input(input):
     return [ubyte_lit(input[0]), us(input[1])]

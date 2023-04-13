@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import os, ultraimport
-ultraimport('__dir__/../tester.py', '*', locals())
+ultraimport('__dir__/../../tester.py', '*', locals())
 
 # Given that a long is on the WS
 # When lthe-ff is called

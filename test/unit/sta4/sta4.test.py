@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import os, ultraimport
-ultraimport('__dir__/../tester.py', '*', locals())
+ultraimport('__dir__/../../tester.py', '*', locals())
 
 # Given that there is a long on the WS
 # When sta4 is called with the long and an address in memory pointing to a long

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import os, ultraimport
-ultraimport('__dir__/../tester.py', '*', locals())
+ultraimport('__dir__/../../tester.py', '*', locals())
 
 # Given that there is a long saved in memory 
 # When lda4 is called with the address of the long
