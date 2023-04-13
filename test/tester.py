@@ -80,8 +80,10 @@ class Tester:
         
         try:
             inputs = (NL.join(inputs) + NL).encode()
+            p.stdout.flush() 
             got, errs = p.communicate(inputs, timeout=wait)
         except TimeoutExpired:
+            p.stdout.flush() 
             p.kill()
             got, errs = p.communicate()
 

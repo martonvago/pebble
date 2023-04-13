@@ -62,8 +62,6 @@ def main():
     t.interact(f'`{next_voter}` legal twice in a row (no votes)', [start_vote, next_voter, next_voter], '')
     t.interact(f'`{next_voter}` legal twice in a row (with votes)', [start_vote, vote_x(1), next_voter, next_voter, vote_x(1)], vote_cast * 2)
     t.interact(f'`{next_voter}` re-enables voting after vote', [start_vote, vote_x(1), vote_x(1), next_voter, vote_x(1)], vote_cast + not_ready + vote_cast)
-    
-    # TODO: why >>/>
     t.interact(f'`{next_voter}` re-enables voting after vote (100x)', [start_vote, *[vote_x(1), vote_x(1), next_voter] * 100], (vote_cast + not_ready) * 100, LONG_WAIT)
 
     # vote
