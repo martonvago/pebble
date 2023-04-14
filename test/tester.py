@@ -2,61 +2,14 @@
 
 from subprocess import run, DEVNULL, call, Popen, PIPE, TimeoutExpired
 import re, os, sys
-from binascii import hexlify
+import ultraimport
 
 from colorama import init as colorama_init
 from colorama import Fore
 from colorama import Style
 
+ultraimport('__dir__/constants.py', '*', locals())
 colorama_init()
-
-NL = '\n'
-MAX_NUM = (1 << 32) - 1
-VOTES_LEN = 1020
-MAX_COMMAND_NAME_LEN = 12
-INPUT_LEN = 2817
-MAX_OPT_NUM = (1 << 8) - 1
-MAX_CAND = MAX_OPT_NUM - 1
-
-def hex8(num):
-    return '{0:08x}'.format(num)
-
-def to_ascii_code(string):
-    return hexlify(str(string).encode()).decode()
-
-def ubyte_lit(string):
-    string = ubyte(string)
-    return re.sub(r'..', lambda matchobj: f"#{matchobj.group(0)} ", string)[:-1]
-
-def ushort_lit(string):
-    return re.sub(r'....', lambda matchobj: f"#{matchobj.group(0)} ", string)[:-1]
-
-def ubyte(num):
-    return format(num, '02x')
-
-def ushort(num):
-    return format(num, '04x')
-
-def split_str_to_chunks(string, size):
-    result = []
-    while len(string) > 0:
-        result.append(string[:size])   
-        string = string[size:]
-    return result
-
-def _split_str_to_max_chunks(string):
-    return split_str_to_chunks(string, 60)            
-
-def _uword(matchobj):
-    string = matchobj.group(0)
-    if string.isspace():
-        return ' 20 '
-    chunks = _split_str_to_max_chunks(string)
-    return '"' + ' "'.join(chunks)
-
-
-def us(string):
-    return re.sub(r'(\S+)|(\s)', _uword, str(string)) + ' $1'
 
 def blank_replace(_, inputs):
     return f"[ [ {inputs.pop(0)} ] ]"
@@ -77,12 +30,12 @@ class Tester:
         self.rom = self.filename + '.rom'
         self.fail = False
 
-    def interact(self, name, inputs, expected, wait=0.1):
+    def interact(self, name, inputs, expected, wait=0.1, ignore_filler=True):
         self._assemble()
         p = Popen([self.uxncli, self.rom], stdin=PIPE, stdout=PIPE)
         
         try:
-            inputs = (NL.join(inputs) + NL).encode()
+            inputs = (NL.join(inputs) + NL).encode() if inputs else ''
             p.stdout.flush() 
             got, errs = p.communicate(inputs, timeout=wait)
         except TimeoutExpired:
@@ -91,7 +44,9 @@ class Tester:
             got, errs = p.communicate()
 
         p.kill()
-        got = got.decode('utf-8').replace('>> ', '')
+        got = got.decode('utf-8')
+        if ignore_filler:
+            got = got.replace('>> ', '').replace(welcome, '')
         self._check_results(name, got, expected)
 
     def test(self, name, inputs, expected):

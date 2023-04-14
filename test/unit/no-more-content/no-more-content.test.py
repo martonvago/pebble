@@ -2,6 +2,7 @@
 
 import os, ultraimport
 ultraimport('__dir__/../../tester.py', '*', locals())
+ultraimport('__dir__/../test-utils.py', '*', locals())
 
 # Given that an array is saved in memory
 # When no-more-content is called with a pointer into this array and the address of the array

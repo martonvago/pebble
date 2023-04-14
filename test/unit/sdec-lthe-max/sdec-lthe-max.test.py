@@ -2,6 +2,7 @@
 
 import os, ultraimport
 ultraimport('__dir__/../../tester.py', '*', locals())
+ultraimport('__dir__/../test-utils.py', '*', locals())
 
 # Given that a decimal string is saved in memory
 # When sdec-lthe-max is called with the address of the first char of the string and the address of the string cap

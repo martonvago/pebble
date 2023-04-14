@@ -2,6 +2,7 @@
 
 import os, ultraimport
 ultraimport('__dir__/../../tester.py', '*', locals())
+ultraimport('__dir__/../test-utils.py', '*', locals())
 
 # Given that two strings are saved in memory
 # When seq-til is called with the absolute addresses of these strings and a limit (0 - ff)

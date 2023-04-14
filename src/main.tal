@@ -18,7 +18,7 @@
 ( main )
 |0100
     #03 .opt STZ                        ( default number of vote options )
-    ;dict/prompt print-string
+    welcome
     ;on-input .Console/vector DEO2 
 BRK
 
@@ -39,6 +39,7 @@ BRK
     &end
 
 @dict
+    &welc   "Welcome 20 "to 20 "`pebble`! $1
     &setup  "setup 20 $1
     &start  "start 20 "vote $1 
     &endv   "end 20 "vote $1
@@ -57,10 +58,17 @@ BRK
     &notrdy "Not 20 "ready 20 "for 20 "next 20 "voter $1
     &tabln  "Votes 20 "for 20 "candidate 20 $1 
     &terr   "Invalid 20 "vote 20 "results 20 "provided $1
-    &newopt "Number 20 "of 20 "candidates 20 "set 20 "to $1
+    &newopt "Number 20 "of 20 "candidates 20 "set 20 "to: 20 $1
     &col    ": 20 $1
 
 ( subroutines )
+@welcome
+    ;dict/welc print-line
+    ;dict/newopt print-string
+    .opt LDZ #01 SUB print-byte-decimal NL
+    ;dict/prompt print-string
+JMP2r
+
 @on-input                               ( called for each char on submit )
     .Console/read DEI                   ( read char )
     #0a EQU ;on-enter JCN2              ( was it enter? )
@@ -164,7 +172,6 @@ JMP2r
     INC .opt STZ                         ( adding 1 option for invalid votes )   
     reset-vote
     ;dict/newopt print-string
-    ;dict/col print-string
     print-byte-decimal NL
     JMP2r
 

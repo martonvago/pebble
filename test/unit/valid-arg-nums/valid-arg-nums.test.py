@@ -2,6 +2,7 @@
 
 import os, ultraimport
 ultraimport('__dir__/../../tester.py', '*', locals())
+ultraimport('__dir__/../test-utils.py', '*', locals())
 
 def arr(votes):
     chars = [to_ascii_code(n) for n in votes]

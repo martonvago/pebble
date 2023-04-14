@@ -2,7 +2,7 @@
 
 import os, ultraimport
 ultraimport('__dir__/../../tester.py', '*', locals())
-
+ultraimport('__dir__/../test-utils.py', '*', locals())
 
 # Given that a hex long is on the working stack
 # When print-decimal is called
