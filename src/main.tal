@@ -51,13 +51,13 @@ BRK
     &unrec  "Command 20 "not 20 "recognised $1
     &prompt ">> 20 $1
     &cast   "Vote 20 "cast $1
-    &verr   "Invalid 20 "vote 20 "option $1
-    &serr   "Invalid 20 "option 20 "number $1
-    &opterr "Number 20 "of 20 "vote 20 "options 20 "must 20 "be 20 "at 20 "least 20 "3 $1
+    &verr   "Invalid 20 "candidate 20 "number 20 "provided $1
+    &serr   "Invalid 20 "number 20 "of 20 "candidates 20 "provided $1
+    &opterr "Number 20 "of 20 "candidates 20 "must 20 "be 20 "at 20 "least 20 "2 $1
     &notrdy "Not 20 "ready 20 "for 20 "next 20 "voter $1
-    &tabln  "Votes 20 "for 20 "option 20 $1 
+    &tabln  "Votes 20 "for 20 "candidate 20 $1 
     &terr   "Invalid 20 "vote 20 "results 20 "provided $1
-    &newopt "Number 20 "of 20 "vote 20 "options 20 "set 20 "to $1
+    &newopt "Number 20 "of 20 "candidates 20 "set 20 "to $1
     &col    ": 20 $1
 
 ( subroutines )
@@ -289,4 +289,4 @@ JMP2r
     JMP2r
 
 
-~/home/marton/uxn/pebble/test/test-utils.tal
+~/home/marton/uxn/pebble/src/functions.tal
