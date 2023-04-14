@@ -1,7 +1,7 @@
 
 ( main )
 |0100
-	;arg LIT2 [ [ ffff ] ] opt-num-lth
+	;arg LIT [ [ ff ] ] opt-num-lth
 	print-byte
     #800f DEO 
 BRK

@@ -24,7 +24,7 @@ def main():
         ['array with multi-digit numbers', ['0018', '"00023;12321;0;12;1232 00 00 00']],
         [
             'maximum add-results arg', 
-            [format(INPUT_LEN - MAX_COMMAND_NAME_LEN, '04x'), us(f'{MAX_NUM};' * MAX_OPT_LEN)[:-3]], 
+            [format(INPUT_LEN - MAX_COMMAND_NAME_LEN, '04x'), us(f'{MAX_NUM};' * MAX_OPT_NUM)[:-3]], 
         ],
     ]
 

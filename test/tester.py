@@ -12,12 +12,11 @@ colorama_init()
 
 NL = '\n'
 MAX_NUM = (1 << 32) - 1
-VOTES_LEN = 1024
+VOTES_LEN = 1020
 MAX_COMMAND_NAME_LEN = 12
-MAX_OPT_LEN = 1 << 8
-MIN_OPT_LEN = 3
-INPUT_LEN = 2828
-OPT = 3                 # hard coded until setup command impl
+INPUT_LEN = 2817
+MAX_OPT_NUM = (1 << 8) - 1
+MAX_CAND = MAX_OPT_NUM - 1
 
 def hex8(num):
     return '{0:08x}'.format(num)

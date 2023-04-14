@@ -23,8 +23,8 @@
 BRK
 
 ( variables )
-@votes 0400 &body $1024                 ( max 256 options, 4 bytes each )
-@input 0b0c &body $2828 &overflow $1    ( max 256 options, each max 11 char + longest command name )
+@votes 03fc &body $1020                 ( max 255 options, 4 bytes each )
+@input 0b01 &body $2817 &overflow $1    ( max 255 options, each max 11 char + longest command name )
 @ptr :input/body
 
 ( constants )
@@ -154,14 +154,14 @@ JMP2r
 
 @do-setup   
     ;commands/setup arg-addr             ( get arg address )
-    DUP2 #0100 opt-num-lth               ( input <= ff )
+    DUP2 #ff opt-num-lth                 ( input < ff )
     #00 EQU ,&invalid-arg JCN            ( end if option invalid )
 
     sdec-to-hex-byte DUP                 ( input as byte )
-    DUP #03 
-    LTH ,&too-small JCN                    ( input < 3? )
+    DUP #02 
+    LTH ,&too-small JCN                  ( input < 2? )
 
-    .opt STZ
+    INC .opt STZ                         ( adding 1 option for invalid votes )   
     reset-vote
     ;dict/newopt print-string
     ;dict/col print-string
@@ -204,7 +204,7 @@ JMP2r
     .can-vote LDZ #00 EQU ,&cannot-vote JCN
 
     ;commands/vote arg-addr                  ( get arg address )
-    DUP2 #00 .opt LDZ opt-num-lth            ( input < opt as short? )   
+    DUP2 .opt LDZ opt-num-lth                ( input < opt? )   
     #00 EQU ,&invalid-arg JCN                ( end if option invalid )
 
     sdec-to-hex-byte                         ( input as byte )

@@ -307,8 +307,8 @@ JMP2r
     #00 EQU 
     JMP2r  
 
-@opt-num-lth ( arg-addr* lim^ -- f )
-    ,&lim STR2
+@opt-num-lth ( arg-addr* lim -- f )
+    ,&lim STR
     #00 ,&ld-0 STR              ( ld-0 = false )
     STH2 DUP2r                  ( RS | start start )
     LDAkr STHkr                 ( load 1st char )
@@ -339,19 +339,17 @@ JMP2r
         #00 EQU ,&fail JCN          ( if num > ffff ffff, fail )
 
         OVR2r STH2r sdec-to-hex     ( WS | start; hex(num) )
-        STH2k                       ( stash last 2 bytes of hex result ) 
+        STHk                        ( stash last byte of hex result ) 
         lthe-ff                     
-        #00 EQU ,&f2 JCN  ( if hex result > ff, fail )
+        #00 EQU ,&fail-cleanup JCN  ( if hex result > ff, fail )
   
-        STH2r [ LIT2 &lim $2 ] LTH2 ( RS | hex short < lim )
+        STHr [ LIT &lim $1 ] LTH    ( RS | hex byte < lim )
         #00 EQU ,&fail JCN
 
         POP2r POP2r
-        #01         ( pass )
+        #01                         ( pass )
         JMP2r
 
-    &f2
-        POPr
     &fail-cleanup
         POPr
 

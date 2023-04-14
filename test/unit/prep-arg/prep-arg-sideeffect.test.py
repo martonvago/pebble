@@ -18,8 +18,8 @@ def main():
         ['array with multi-digit numbers', ['0018', '"00023;12321;0;12;1232 00 00 00'], '303030323300313233323100300031320031323332000000'],
         [
             'maximum add-results arg', 
-            [format(INPUT_LEN - MAX_COMMAND_NAME_LEN, '04x'), us(f'{MAX_NUM};' * MAX_OPT_LEN)[:-3]], 
-            f'{"3432393439363732393500" * MAX_OPT_LEN}'
+            [format(INPUT_LEN - MAX_COMMAND_NAME_LEN, '04x'), us(f'{MAX_NUM};' * MAX_OPT_NUM)[:-3]], 
+            f'{"3432393439363732393500" * MAX_OPT_NUM}'
         ],
     ]
 

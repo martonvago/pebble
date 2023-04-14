@@ -37,7 +37,7 @@ def main():
     t.interact('input > buffer not allowed (3)', [start_vote + ' ' * (INPUT_LEN + 1 - len(start_vote))], command_not_rec)
     t.interact('unknown command not allowed', ['hello'], command_not_rec)
     t.interact('unknown command not allowed (2)', ['start-vote'], command_not_rec)
-    t.interact('max-length input allowed', [setup_x(255), add_results_x(f'{MAX_NUM};' * 255)], cand_set_x(255))
+    t.interact('max-length input allowed', [setup_x(MAX_CAND), add_results_x(f'{MAX_NUM};' * MAX_OPT_NUM)], cand_set_x(MAX_CAND))
 
     # setup
     ## args
@@ -47,12 +47,11 @@ def main():
     t.interact('setup arg must be numeric (2)', [setup_x('1a')], invalid_setup_arg)
     t.interact('setup arg cannot be 0', [setup_x(0)], setup_arg_too_small)
     t.interact('setup arg cannot be 1', [setup_x(1)], setup_arg_too_small)
-    t.interact('setup arg cannot be 2', [setup_x(2)], setup_arg_too_small)
-    t.interact('setup arg can be 3', [setup_x(3)], cand_set_x(3))
+    t.interact('setup arg can be 2', [setup_x(2)], cand_set_x(2))
     t.interact('setup arg must not have leading 0s', [setup_x('00')], invalid_setup_arg)
     t.interact('setup arg must not have leading 0s (2)', [setup_x('01')], invalid_setup_arg)
-    t.interact('setup arg cannot be > ff', [setup_x(256)], invalid_setup_arg)
-    t.interact('setup arg can be ff', [setup_x(255)], cand_set_x(255))
+    t.interact(f'setup arg cannot be > {MAX_CAND}', [setup_x(MAX_CAND + 1)], invalid_setup_arg)
+    t.interact(f'setup arg can be {MAX_CAND}', [setup_x(MAX_CAND)], cand_set_x(MAX_CAND))
 
     ## behaviour
     t.interact('setup illegal when voting', [start_vote, setup_x(3)], vote_in_progress)
@@ -60,14 +59,14 @@ def main():
     t.interact('setup illegal when voting (3)', [start_vote, vote_x(1), next_voter, setup_x(3)], vote_cast + vote_in_progress)
     t.interact('setup legal twice in a row', [setup_x(3), setup_x(5)], cand_set_x(3) + cand_set_x(5))
     t.interact(
-        'changing option number has effect', 
+        'changing number of candidates has effect', 
         [setup_x(3), start_vote, vote_x(4), end_vote, setup_x(7), start_vote, vote_x(4)], 
         cand_set_x(3) + invalid_cand_num + cand_set_x(7) + vote_cast
     )
     t.interact(
         'setup resets counts', 
         [add_results_x('2;3;4'), tabulate, setup_x(5), tabulate], 
-        results_x([2, 3, 4]) + cand_set_x(5) + results_x([0] * 5)
+        results_x([2, 3, 4]) + cand_set_x(5) + results_x([0] * 6)
     )
 
     # start vote
@@ -106,8 +105,9 @@ def main():
     t.interact('vote arg can be 0', [start_vote, vote_x(0)], vote_cast)
     t.interact('vote arg must not have leading 0s', [start_vote, vote_x('00')], invalid_cand_num)
     t.interact('vote arg must not have leading 0s (2)', [start_vote, vote_x('01')], invalid_cand_num)
-    t.interact('vote arg must be < option count', [start_vote, vote_x(OPT)], invalid_cand_num)
-    t.interact('vote arg can be option count - 1', [start_vote, vote_x(OPT - 1)], vote_cast)
+    t.interact('vote arg cannot be > last candidate number', [setup_x(6), start_vote, vote_x(7)], cand_set_x(6) + invalid_cand_num)
+    t.interact('vote arg can be = last candidate number', [setup_x(6), start_vote, vote_x(6)], cand_set_x(6) + vote_cast)
+    t.interact('vote arg can be < last candidate number', [setup_x(6), start_vote, vote_x(5)], cand_set_x(6) + vote_cast)
 
     ## behaviour
     t.interact('vote illegal when not voting', [vote_x(1), tabulate], no_vote_in_progress + results_x([0, 0, 0]))
@@ -190,8 +190,8 @@ def main():
         'multiple elections in a row with different number of options',
         [setup_x(10), start_vote, vote_x(5), next_voter, vote_x(22), vote_x(0), end_vote, tabulate,
         setup_x(4), start_vote, vote_x(5), vote_x(0), vote_x(0), next_voter, vote_x(1), end_vote, tabulate],
-        cand_set_x(10) + vote_cast + invalid_cand_num + vote_cast + results_x([1, 0, 0, 0, 0, 1, 0, 0, 0, 0]) +
-        cand_set_x(4) + invalid_cand_num + vote_cast + not_ready + vote_cast + results_x([1, 1, 0, 0])
+        cand_set_x(10) + vote_cast + invalid_cand_num + vote_cast + results_x([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]) +
+        cand_set_x(4) + invalid_cand_num + vote_cast + not_ready + vote_cast + results_x([1, 1, 0, 0, 0])
     )
 
     t.done()    
