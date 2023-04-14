@@ -1,12 +1,12 @@
 
 ( main )
 |0100
-	;arg [ [ #ff ] ] valid-vote-arg
+	;arg LIT2 [ [ ffff ] ] opt-num-lth
 	print-byte
     #800f DEO 
 BRK
 
-@arg [ [ "999999999999999999999999999 $1 ] ]
+@arg [ [ "42949672950 $1 ] ]
 
 
 ~/home/marton/uxn/pebble/src/functions.tal

@@ -14,7 +14,7 @@ NL = '\n'
 MAX_NUM = (1 << 32) - 1
 VOTES_LEN = 1024
 MAX_COMMAND_NAME_LEN = 12
-MAX_OPTIONS = 1 << 8
+MAX_OPT_LEN = 1 << 8
 INPUT_LEN = 2828
 OPT = 3                 # hard coded until setup command impl
 
@@ -33,6 +33,9 @@ def ushort_lit(string):
 
 def ubyte(num):
     return format(num, '02x')
+
+def ushort(num):
+    return format(num, '04x')
 
 def split_str_to_chunks(string, size):
     result = []

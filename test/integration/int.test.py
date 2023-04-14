@@ -35,7 +35,7 @@ def main():
     t.interact('unknown command not allowed', ['hello'], command_not_rec)
     t.interact('unknown command not allowed (2)', ['start-vote'], command_not_rec)
     # will not actually add while opt = 3
-    t.interact('max-length input allowed', [add_results_x(f'{MAX_NUM};' * MAX_OPTIONS)], invalid_results)
+    t.interact('max-length input allowed', [add_results_x(f'{MAX_NUM};' * MAX_OPT_LEN)], invalid_results)
 
     # start vote
     t.interact(f'`{start_vote}` allows no args', [start_vote + 'abcd'], command_not_rec)

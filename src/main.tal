@@ -29,6 +29,7 @@ BRK
 
 ( constants )
 @commands ( name* in-voting )
+    &setup  :dict/setup  00
     &start  :dict/start  00
     &endv   :dict/endv   01
     &next   :dict/next   01
@@ -38,6 +39,7 @@ BRK
     &end
 
 @dict
+    &setup  "setup 20 $1
     &start  "start 20 "vote $1 
     &endv   "end 20 "vote $1
     &next   "next 20 "voter $1
@@ -50,9 +52,11 @@ BRK
     &prompt ">> 20 $1
     &cast   "Vote 20 "cast $1
     &verr   "Invalid 20 "vote 20 "option $1
+    &serr   "Invalid 20 "option 20 "number $1
     &notrdy "Not 20 "ready 20 "for 20 "next 20 "voter $1
     &tabln  "Votes 20 "for 20 "option 20 $1 
     &terr   "Invalid 20 "vote 20 "results 20 "provided $1
+    &newopt "Number 20 "of 20 "vote 20 "options 20 "set 20 "to $1
     &col    ": 20 $1
 
 ( subroutines )
@@ -76,7 +80,8 @@ BRK
                                         ( otherwise process input )    
     #00 ;ptr LDA2 STA                 	( null terminate input str )
     
-    ;commands/start ;do-start-vote if-match  ( try to match input to a command )   	
+    ;commands/setup ;do-setup if-match  ( try to match input to a command )   	
+    ;commands/start ;do-start-vote if-match      
     ;commands/endv ;do-end-vote if-match           
     ;commands/next ;do-next-voter if-match           
     ;commands/vote ;do-vote if-match         
@@ -146,8 +151,25 @@ JMP2r
     AND 
 JMP2r
 
+@do-setup   
+    ;commands/setup arg-addr             ( get arg address )
+    DUP2 #0100 opt-num-lth               ( input <= ff )
+    #00 EQU ,&invalid-arg JCN            ( end if option invalid )
+    #00ff INC 
+    sdec-to-hex-byte DUP                 ( input as byte )
+    .opt STZ
+    reset-vote
+    ;dict/newopt print-string
+    ;dict/col print-string
+    print-byte-decimal NL
+    JMP2r
+
+    &invalid-arg
+        POP2
+        ;dict/serr print-line
+JMP2r
+
 @do-start-vote    
-    ( if arg not empty fail )
     reset-vote
     #01 .voting STZ    
     enable-next-voter
@@ -158,7 +180,6 @@ JMP2r
 JMP2r
 
 @do-end-vote
-    ( if arg not empty fail )
     #00 .voting STZ    
 JMP2r
 
@@ -167,18 +188,18 @@ JMP2r
 JMP2r
 
 @do-next-voter
-    ( if arg not empty fail )
     enable-next-voter
 JMP2r
 
 @do-vote
     .can-vote LDZ #00 EQU ,&cannot-vote JCN
 
-    ;commands/vote arg-addr DUP2 .opt LDZ     ( get arg address )
-    valid-vote-arg #00 EQU ,&invalid-arg JCN ( end if option invalid )
+    ;commands/vote arg-addr                  ( get arg address )
+    DUP2 #00 .opt LDZ opt-num-lth            ( input < opt as short? )   
+    #00 EQU ,&invalid-arg JCN                ( end if option invalid )
 
-    sdec-to-hex NIP2 NIP                    ( choice as byte )
-    choice-addr inc-at-abs                  ( cast vote )    
+    sdec-to-hex-byte                         ( input as byte )
+    choice-addr inc-at-abs                   ( cast vote )    
     ;dict/cast print-line 
     #00 .can-vote STZ 
     JMP2r   
