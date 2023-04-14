@@ -15,6 +15,7 @@ MAX_NUM = (1 << 32) - 1
 VOTES_LEN = 1024
 MAX_COMMAND_NAME_LEN = 12
 MAX_OPT_LEN = 1 << 8
+MIN_OPT_LEN = 3
 INPUT_LEN = 2828
 OPT = 3                 # hard coded until setup command impl
 

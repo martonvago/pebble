@@ -17,7 +17,7 @@
 
 ( main )
 |0100
-    #03 .opt STZ
+    #03 .opt STZ                        ( default number of vote options )
     ;dict/prompt print-string
     ;on-input .Console/vector DEO2 
 BRK
@@ -53,6 +53,7 @@ BRK
     &cast   "Vote 20 "cast $1
     &verr   "Invalid 20 "vote 20 "option $1
     &serr   "Invalid 20 "option 20 "number $1
+    &opterr "Number 20 "of 20 "vote 20 "options 20 "must 20 "be 20 "at 20 "least 20 "3 $1
     &notrdy "Not 20 "ready 20 "for 20 "next 20 "voter $1
     &tabln  "Votes 20 "for 20 "option 20 $1 
     &terr   "Invalid 20 "vote 20 "results 20 "provided $1
@@ -155,14 +156,22 @@ JMP2r
     ;commands/setup arg-addr             ( get arg address )
     DUP2 #0100 opt-num-lth               ( input <= ff )
     #00 EQU ,&invalid-arg JCN            ( end if option invalid )
-    #00ff INC 
+
     sdec-to-hex-byte DUP                 ( input as byte )
+    DUP #03 
+    LTH ,&too-small JCN                    ( input < 3? )
+
     .opt STZ
     reset-vote
     ;dict/newopt print-string
     ;dict/col print-string
     print-byte-decimal NL
     JMP2r
+
+    &too-small 
+        POP
+        ;dict/opterr print-line
+        JMP2r
 
     &invalid-arg
         POP2
@@ -244,7 +253,7 @@ JMP2r
 JMP2r
 
 @do-add-results
-    valid-addres-arg ,&cont JCN              ( if args invalid, break )
+    valid-addres-arg ,&cont JCN              ( if args invalid, end )
     ;dict/terr print-line
     JMP2r
 
@@ -280,4 +289,4 @@ JMP2r
     JMP2r
 
 
-~/home/marton/uxn/pebble/src/functions.tal
+~/home/marton/uxn/pebble/test/test-utils.tal

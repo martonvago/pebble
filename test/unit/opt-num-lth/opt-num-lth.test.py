@@ -17,6 +17,7 @@ def main():
     t = Tester(__file__)
 
     LAST_OPT = MAX_OPT_LEN - 1
+    MAX_LIM = (1 << 16) - 1
     passes = [
         ['3 > 1', [3, 1]],
         ['3 > 0', [3, 0]],
@@ -41,8 +42,8 @@ def main():
         ['input with 2 leading 0s', [5, '002']],
         ['input with 3 leading 0s', [5, '0002']],
         ['input > limit', [3, 4]],
-        ['input max num, limit ffff', [(1 << 16) - 1, MAX_NUM]],
-        ['input > max num, limit ffff', [(1 << 16) - 1, MAX_NUM * 10]],
+        ['input max num, limit ffff', [MAX_LIM, MAX_NUM]],
+        ['input > max num, limit ffff', [MAX_LIM, MAX_NUM * 10]],
     ]
 
     for case in passes:

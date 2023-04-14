@@ -258,31 +258,31 @@ JMP2r
 JMP2r
 
 @valid-arg-nums ( arg-addr* arr-cap^ opt -- f )
-    #01 ,&c STR                 ( c = 1 )
-    ,&opt STR                   ( opt = opt )
+    ,&opt STR                    ( opt = opt )
     ,&arr-cap STR2
-    STH2                        ( RS: | addr )
+    #00 ,&c STR 
+    STH2                         ( RS: | addr )
     &next-num
         STH2kr [ LIT2 &arr-cap $2 ] 
         no-more-content ,&fin JCN
 
-        [ LIT &opt $1 ]         ( opt: number of options )
-        [ LIT &c $1 ]           ( c: count of nums )
-        LTH ,&fail JCN          ( if opt < c, fail )
+        [ LIT &opt $1 ]          ( opt: number of options )
+        [ LIT &c $1 ]            ( c: count of nums )
+        GTH #00 EQU ,&fail JCN   ( if opt <= c (and still processing), fail )
 
         STH2r DUP2 ,&num-cap JSR ( calc num cap and return here ) 
-        DUP2 INC2 STH2          ( addr = num cap++ )
+        DUP2 INC2 STH2           ( addr = num cap++ )
         sdec-lthe-max           
-        #00 EQU ,&fail JCN      ( if num > ffff ffff, fail )
+        #00 EQU ,&fail JCN       ( if num > ffff ffff, fail )
 
-        ,&c LDR INC ,&c STR     ( c++ )
+        ,&c LDR INC ,&c STR      ( c++ )
         ,&next-num JMP
 
     &num-cap ( ptr* -- num cap )
-        INC2                    ( ptr++ )
-        LDAk #00 NEQ STH            ( byte != 00 )
+        INC2                     ( ptr++ )
+        LDAk #00 NEQ STH         ( byte != 00 )
         DUP2
-        ,&arr-cap LDR2 NEQ2     ( ptr != arr cap )
+        ,&arr-cap LDR2 NEQ2      ( ptr != arr cap )
         STHr
         AND ,&num-cap JCN
         JMP2r
@@ -292,13 +292,13 @@ JMP2r
         #00    
         JMP2r
 
-    &fin
-        ,&opt LDR   
-        ,&c LDR #01 SUB         ( c - 1 to compensate for 0 start )
-        NEQ ,&fail JCN          ( if opt != c - 1, fail )
+    &fin 
+        ,&opt LDR    
+        ,&c LDR                
+        NEQ ,&fail JCN           ( if opt != c, fail )
 
         POP2r
-        #01                     ( pass )
+        #01                      ( pass )
 JMP2r
 
 @lthe-ff ( num^^ -- f )
