@@ -6,11 +6,13 @@ Pebble is a paperless, non-networked voting application for the Uxn virtual mach
 #### Emulator:
 `pebble` runs on [Uxn](https://wiki.xxiivv.com/site/uxn.html), a virtual stack-machine.  To run `pebble` you need to have `uxncli`, the Uxn emulator without a graphics mode. You can download `uxncli` from https://sr.ht/~rabbits/uxn/#download-binaries .
  #### Pebble:
- You can build `pebble` from the source code yourself using the Uxn assembler from https://sr.ht/~rabbits/uxn/#download-binaries :
+ You can build Pebble from the source code yourself:
+ 1. Make sure imports are set up correctly (see [Imports](#imports) section)
+ 2. Download the Uxn assembler from https://sr.ht/~rabbits/uxn/#download-binaries
+ 3. Run:
+     `<path/to>uxnasm <path/to>pebble.tal <path/to>pebble.rom`
 
-    <path/to>uxnasm <path/to>pebble.tal <path/to>pebble.rom
-
-Alternatively, you can use the pre-built `pebble.rom` file included in this repository.
+**Alternatively**, you can use the pre-built `pebble.rom` file included in this repository.
 
 Start Pebble by typing:
 
@@ -33,7 +35,24 @@ Start Pebble by typing:
  - Must start with a digit, can end with a digit or a `;`.
  - Number of vote counts provided must match the number of candidates configured on this machine, including the invalid vote option.
 
+> Note: Pebble works with unsigned 32-bit integers, supporting numbers up to and including 4 294 967 295.
+
 ## Development
 ### Source code
+The source code is located in the `src` folder:
+- `pebble.tal`: entry point and program control logic
+- `functions.tal`: state-independent subroutines 
+- [math32.tal](http://plastic-idolatry.com/erik/nxu/math32.tal): library providing support for unsigned 32-bit integers
+
+### Imports
+The code uses absolute file names when importing `.tal` files in other `.tal` files to allow for a more complex folder structure.  This is necessary because Uxn resolves imports relative to the entry point `.tal` file, and `.tal` entry points in the test folder are at various different locations. 
+
+Therefore, when setting the project up for the first time, the absolute path to the project root folder has to be substituted in for the imports to resolve successfully.
+
+To do this, run
+
+    resolve-imports
+   
+**from the project root folder**.
 
 ### Tests
