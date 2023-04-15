@@ -60,6 +60,7 @@ BRK
     &terr   "Invalid 20 "vote 20 "results 20 "provided $1
     &newopt "Number 20 "of 20 "candidates 20 "set 20 "to: 20 $1
     &col    ": 20 $1
+    &inval  "Invalid 20 "votes $1
 
 ( subroutines )
 @welcome
@@ -250,14 +251,18 @@ JMP2r
 
 @tabulate-option ( choice )
     DUP choice-addr ROT
+    DUP #00 EQU ,&invalid JCN
     ;dict/tabln print-string
-
     print-byte-decimal
-    ;dict/col print-string
-    
-    lda4 print-decimal
-    NL
-JMP2r
+    &fin
+        ;dict/col print-string
+        lda4 print-decimal NL
+        JMP2r
+
+    &invalid
+        POP
+        ;dict/inval print-string
+        ,&fin JMP
 
 @do-add-results
     valid-addres-arg ,&cont JCN              ( if args invalid, end )

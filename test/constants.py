@@ -30,8 +30,11 @@ invalid_setup_arg = 'Invalid number of candidates provided' + NL
 setup_arg_too_small = 'Number of candidates must be at least 2' + NL
 invalid_results = 'Invalid vote results provided' + NL
 not_ready = 'Not ready for next voter' + NL
-results_x = lambda counts: ''.join([f'Votes for candidate {i}: {c}{NL}' for i, c in enumerate(counts)])
 cand_set_x = lambda o: f'Number of candidates set to: {o}' + NL
+def results_x(counts):
+	invalid = f'Invalid votes: {counts.pop(0)}{NL}'
+	rest= ''.join([f'Votes for candidate {i + 1}: {c}{NL}' for i, c in enumerate(counts)])
+	return invalid + rest
 
 prompt = '>> '
 welcome = 'Welcome to `pebble`!\n' + cand_set_x(DEFAULT_CAND)
