@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from subprocess import run, DEVNULL, call, Popen, PIPE, TimeoutExpired
+from subprocess import run, DEVNULL, call, Popen, PIPE, TimeoutExpired, STDOUT
 import re, os, sys
 import ultraimport
 
@@ -28,11 +28,12 @@ class Tester:
     def __init__(self, file):
         self.filename = abs_path_to_file(file)
         self.rom = self.filename + '.rom'
+        self.sym = self.rom + '.sym'
         self.fail = False
 
     def interact(self, name, inputs, expected, wait=0.1, ignore_filler=True):
         self._assemble()
-        p = Popen([self.uxncli, self.rom], stdin=PIPE, stdout=PIPE)
+        p = Popen([self.uxncli, self.rom], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
         
         try:
             inputs = (NL.join(inputs) + NL).encode() if inputs else ''
@@ -59,7 +60,7 @@ class Tester:
             f.truncate()
 
         self._assemble()
-        result = run([self.uxncli, self.rom], capture_output = True)
+        result = run([self.uxncli, self.rom], stdout=PIPE, stderr=STDOUT)
         
         got = result.stdout.decode('utf-8')
         self._check_results(name, got, expected)
@@ -68,6 +69,8 @@ class Tester:
         sys.exit(self.fail)
 
     def _assemble(self):
+        if os.path.exists(self.rom): os.remove(self.rom)
+        if os.path.exists(self.sym): os.remove(self.sym)
         run([self.uxnasm, self.filename, self.rom], stderr = DEVNULL)
 
     def _check_results(self, name, got, expected):
