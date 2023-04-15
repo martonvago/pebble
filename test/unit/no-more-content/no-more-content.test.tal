@@ -5,7 +5,6 @@
 	;arr arr-cap no-more-content
 	print-byte
     #800f DEO 
-BRK
 
 @arr [ [ 0006 ] ] &body [ [ 11 22 33 00 00 00 ] ]
 

@@ -4,7 +4,6 @@
 	;arg LIT [ [ ff ] ] opt-num-lth
 	print-byte
     #800f DEO 
-BRK
 
 @arg [ [ "42949672950 $1 ] ]
 

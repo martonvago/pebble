@@ -5,7 +5,6 @@
     seq-til                       ( when )
     print-byte                    ( then )
     #800f DEO                     ( halt )   
-BRK
 
 @string1 [ [ "a $1 ] ]
 @string2 [ [ "a $1 ] ]

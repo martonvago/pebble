@@ -4,6 +4,5 @@
     LIT [ [ ff ] ]          
     print-byte-decimal               
     #800f DEO                    ( halt )   
-BRK
 
 ~/home/marton/uxn/pebble/src/functions.tal

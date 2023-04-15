@@ -4,7 +4,6 @@
 	;addr lda4
 	print-long
     #800f DEO 
-BRK
 
 @addr [ [ 2300 0000 ] ]
 

@@ -4,7 +4,6 @@
 	;arr/body ;arr arr-cap prep-arg  
 	print-byte
     #800f DEO 
-BRK
 
 @arr [ [ 0005 ] ] &body [ [ 00 00 "1;2 ] ]
 
