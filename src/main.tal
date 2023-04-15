@@ -251,15 +251,15 @@ JMP2r
 
 @tabulate-option ( choice )
     DUP choice-addr ROT
-    DUP #00 EQU ,&invalid JCN
+    DUP #00 EQU ,&invalid JCN               ( 0th element is the invalid choice )
     ;dict/tabln print-string
     print-byte-decimal
     &fin
-        ;dict/col print-string
+        ;dict/col print-string              ( print vote count for choice )
         lda4 print-decimal NL
         JMP2r
 
-    &invalid
+    &invalid                    
         POP
         ;dict/inval print-string
         ,&fin JMP
