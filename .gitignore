@@ -1,4 +1,5 @@
 /project-log.txt
 *.rom
+!/pebble.rom
 *.rom.sym
 __pycache__
