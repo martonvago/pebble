@@ -51,7 +51,7 @@ Therefore, when setting the project up for the first time, the absolute path to 
 
 To do this, run
 
-    resolve-imports
+    resolve-imports.sh
    
 **from the project root folder**.
 

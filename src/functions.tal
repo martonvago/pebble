@@ -1,5 +1,3 @@
-( referenced device ports, if any, defined in caller files!! )
-
 @pop4 ( a^^ --  )
     POP2 POP2 JMP2r
 
