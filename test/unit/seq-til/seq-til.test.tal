@@ -10,5 +10,5 @@ BRK
 @string1 [ [ "a $1 ] ]
 @string2 [ [ "a $1 ] ]
 
-~/home/marton/uxn/pebble/src/functions.tal
-~/home/marton/uxn/pebble/test/unit/test-utils.tal
+~<project-root>/src/functions.tal
+~<project-root>/test/unit/test-utils.tal

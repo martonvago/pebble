@@ -10,5 +10,5 @@ BRK
 @arr [ [ 0006 ] ] &body [ [ 11 22 33 00 00 00 ] ]
 
 
-~/home/marton/uxn/pebble/src/functions.tal
-~/home/marton/uxn/pebble/test/unit/test-utils.tal
+~<project-root>/src/functions.tal
+~<project-root>/test/unit/test-utils.tal
