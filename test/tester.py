@@ -11,6 +11,9 @@ from colorama import Style
 ultraimport('__dir__/constants.py', '*', locals())
 colorama_init()
 
+uxnasm = 'uxnasm'       # path to uxnasm (if not on path)
+uxncli = 'uxncli'       # path to uxncli (if not on path)
+
 def blank_replace(_, inputs):
     return f"[ [ {inputs.pop(0)} ] ]"
 
@@ -20,9 +23,6 @@ def abs_path_to_file(file):
     return os.path.join(here, tal_file)
 
 class Tester:
-    uxn_loc = '/home/marton/uxn/uxn/'
-    uxnasm = uxn_loc + 'uxnasm'
-    uxncli = uxn_loc + 'uxncli'
     placeholder = r'\[ \[.*?\] \]' 
 
     def __init__(self, file):
@@ -33,7 +33,7 @@ class Tester:
 
     def interact(self, name, inputs, expected, wait=0.1, ignore_filler=True):
         self._assemble()
-        p = Popen([self.uxncli, self.rom], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+        p = Popen([uxncli, self.rom], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
         
         try:
             inputs = (NL.join(inputs) + NL).encode() if inputs else ''
@@ -60,7 +60,7 @@ class Tester:
             f.truncate()
 
         self._assemble()
-        result = run([self.uxncli, self.rom], stdout=PIPE, stderr=STDOUT)
+        result = run([uxncli, self.rom], stdout=PIPE, stderr=STDOUT)
         
         got = result.stdout.decode('utf-8')
         self._check_results(name, got, expected)
@@ -71,7 +71,7 @@ class Tester:
     def _assemble(self):
         if os.path.exists(self.rom): os.remove(self.rom)
         if os.path.exists(self.sym): os.remove(self.sym)
-        run([self.uxnasm, self.filename, self.rom], stderr = DEVNULL)
+        run([uxnasm, self.filename, self.rom], stderr = DEVNULL)
 
     def _check_results(self, name, got, expected):
         if got == expected:
