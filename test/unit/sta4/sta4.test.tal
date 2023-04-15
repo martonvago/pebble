@@ -5,6 +5,7 @@
 	;addr1 lda4 print-long
 	;addr2 lda4 print-long
     #800f DEO 
+BRK
 
 @addr1 $4
 @addr2 $4

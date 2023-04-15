@@ -4,6 +4,7 @@
 	;dec-str ;dec-str scap sdec-lthe-max
 	print-byte
     #800f DEO 
+BRK
 
 @dec-str [ [ "4294967296 $1 ] ]
 

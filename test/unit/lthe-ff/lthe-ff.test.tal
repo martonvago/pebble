@@ -4,6 +4,7 @@
 	[ [ #6778 #0000 ] ] lthe-ff 
 	print-byte
     #800f DEO 
+BRK
 
 
 ~/home/marton/uxn/pebble/src/functions.tal

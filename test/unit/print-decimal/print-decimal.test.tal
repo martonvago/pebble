@@ -6,5 +6,6 @@
     [ [ #ffff #ffff ] ]          ( given )
     print-decimal                ( when )
     #800f DEO                    ( halt )   
+BRK
 
 ~/home/marton/uxn/pebble/src/functions.tal

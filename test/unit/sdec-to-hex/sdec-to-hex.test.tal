@@ -4,6 +4,7 @@
     ;string sdec-to-hex             
     print-long                    
     #800f DEO                        
+BRK
 
 @string [ [ "4294967296 $1 ] ]
 
