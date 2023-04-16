@@ -13,6 +13,8 @@ colorama_init()
 
 uxnasm = 'uxnasm'       # path to uxnasm (if not on path)
 uxncli = 'uxncli'       # path to uxncli (if not on path)
+check = '\U00002705'
+cross = '\U0000274C'
 
 def blank_replace(_, inputs):
     return f"[ [ {inputs.pop(0)} ] ]"
@@ -75,8 +77,8 @@ class Tester:
 
     def _check_results(self, name, got, expected):
         if got == expected:
-            print(f"{Fore.GREEN}{name}: passed{Style.RESET_ALL}")
+            print(f" {check} {Fore.GREEN}{name}{Style.RESET_ALL}")
         else:
             self.fail = True
             case = {'got': got, 'expected': expected}
-            print(f"{Fore.RED}{name}: failed{Style.RESET_ALL} ({case})")
+            print(f" {cross} {Fore.RED}{name}{Style.RESET_ALL}\n({case})")
