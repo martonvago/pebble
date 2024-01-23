@@ -1,7 +1,10 @@
 
 # Pebble
-Pebble is a paperless, non-networked voting application for the Uxn virtual machine.
+Pebble is a paperless, non-networked voting application for the Uxn virtual machine.\
+It's written in uxntal, the assembly language for Uxn.\
 This was my final year project at Birkbeck in 2023.
+
+Demo run: https://youtu.be/txgyPt_kU4w
 
 ## How to run
 ### Setting up
