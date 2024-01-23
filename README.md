@@ -1,6 +1,7 @@
 
 # Pebble
 Pebble is a paperless, non-networked voting application for the Uxn virtual machine.
+This was my final year project at Birkbeck in 2023.
 
 ## How to run
 ### Setting up
